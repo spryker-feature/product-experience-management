@@ -1,0 +1,10 @@
+<tr>
+    <td>{{ 'Display At' | trans }}:</td>
+    <td>
+        {% if attributeTransfer.visibility %}
+            {% for type in attributeTransfer.visibility | split(',') %}
+                <span class="badge text-bg-light">{{ type | trim }}</span>
+            {% endfor %}
+        {% endif %}
+    </td>
+</tr>

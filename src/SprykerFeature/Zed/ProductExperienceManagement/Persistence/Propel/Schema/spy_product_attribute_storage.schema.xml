@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<database xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="zed" xsi:noNamespaceSchemaLocation="http://static.spryker.com/schema-01.xsd" namespace="Orm\Zed\ProductExperienceManagement\Persistence" package="src.Orm.Zed.ProductExperienceManagement.Persistence">
+
+    <table name="spy_product_attribute_storage" identifierQuoting="true">
+        <column name="id_product_attribute_storage" type="INTEGER" autoIncrement="true" primaryKey="true"/>
+        <column name="fk_product_management_attribute" type="INTEGER" required="true"/>
+        <column name="attribute_key" type="VARCHAR" size="255" required="true"/>
+        <column name="data" type="LONGVARCHAR" required="false"/>
+
+        <id-method-parameter value="spy_product_attribute_storage_pk_seq"/>
+
+        <index name="spy_product_attribute_storage-fk_product_management_attribute">
+            <index-column name="fk_product_management_attribute"/>
+        </index>
+        <unique name="spy_product_attribute_storage-unique-attribute_key">
+            <unique-column name="attribute_key"/>
+        </unique>
+
+        <behavior name="synchronization">
+            <parameter name="resource" value="product_attribute"/>
+            <parameter name="key_suffix_column" value="attribute_key"/>
+            <parameter name="queue_group" value="sync.storage.product_attribute"/>
+            <parameter name="queue_pool" value="synchronizationPool"/>
+        </behavior>
+        <behavior name="timestampable"/>
+    </table>
+</database>

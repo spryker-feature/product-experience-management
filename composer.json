@@ -1,0 +1,62 @@
+{
+    "name": "spryker-feature/product-experience-management",
+    "type": "library",
+    "description": "ProductExperienceManagement module",
+    "license": "proprietary",
+    "require": {
+        "php": ">=8.3",
+        "spryker/event-behavior": "^1.30.0",
+        "spryker/kernel": "^3.30.0",
+        "spryker/locale": "^4.0.0",
+        "spryker/product-attribute": "^1.11.0",
+        "spryker/product-attribute-extension": "^1.1.0",
+        "spryker/product-attribute-gui-extension": "^1.0.0",
+        "spryker/product-storage": "^1.29.0",
+        "spryker/publisher-extension": "^1.0.0",
+        "spryker/storage": "^3.4.0",
+        "spryker/store": "^1.19.0",
+        "spryker/symfony": "^3.0.0",
+        "spryker/synchronization": "^1.9.0",
+        "spryker/synchronization-behavior": "^1.10.0",
+        "spryker/synchronization-extension": "^1.1.0",
+        "spryker/util-encoding": "^2.0.0"
+    },
+    "require-dev": {
+        "spryker/code-sniffer": "*",
+        "spryker/gui": "*",
+        "spryker/propel": "*",
+        "spryker/queue": "*",
+        "spryker/testify": "*"
+    },
+    "suggest": {
+        "spryker/gui": "If you want to use Select2ComboBoxType in form expander plugins.",
+        "spryker/propel-orm": "If you want to use Propel ORM for persistence."
+    },
+    "autoload": {
+        "psr-4": {
+            "SprykerFeature\\": "src/SprykerFeature/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "SprykerFeatureTest\\": "tests/SprykerFeatureTest/"
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "scripts": {
+        "cs-check": "phpcs -p -s --standard=vendor/spryker/code-sniffer/SprykerStrict/ruleset.xml src/ tests/",
+        "cs-fix": "phpcbf -p --standard=vendor/spryker/code-sniffer/SprykerStrict/ruleset.xml src/ tests/"
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.0.x-dev"
+        }
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        }
+    }
+}

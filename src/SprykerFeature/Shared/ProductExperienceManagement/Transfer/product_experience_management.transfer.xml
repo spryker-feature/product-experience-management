@@ -1,0 +1,85 @@
+<?xml version="1.0"?>
+<transfers xmlns="spryker:transfer-01" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="spryker:transfer-01 http://static.spryker.com/transfer-01.xsd">
+
+    <transfer name="ProductAttributeStorage" strict="true">
+        <property name="key" type="string"/>
+        <property name="inputType" type="string"/>
+        <property name="isSuper" type="bool"/>
+        <property name="visibilityTypes" type="string[]" singular="visibilityType"/>
+    </transfer>
+
+    <transfer name="ProductManagementAttributeCollection">
+        <property name="productManagementAttributes" type="ProductManagementAttribute[]" singular="productManagementAttribute"/>
+        <property name="pagination" type="Pagination"/>
+    </transfer>
+
+    <transfer name="ProductManagementAttribute">
+        <property name="idProductManagementAttribute" type="int"/>
+        <property name="key" type="string"/>
+        <property name="inputType" type="string"/>
+        <property name="isSuper" type="bool"/>
+        <property name="visibility" type="string" description="Comma-separated visibility types"/>
+        <property name="visibilityTypes" type="string[]" singular="visibilityType" description="Derived array of visibility types (PDP, PLP, Cart). Empty = internal only."/>
+    </transfer>
+
+    <transfer name="ProductManagementAttributeCriteria" strict="true">
+        <property name="productManagementAttributeConditions" type="ProductManagementAttributeConditions"/>
+        <property name="pagination" type="Pagination"/>
+    </transfer>
+
+    <transfer name="ProductManagementAttributeConditions" strict="true">
+        <property name="productManagementAttributeIds" type="int[]" singular="idProductManagementAttribute"/>
+    </transfer>
+
+    <transfer name="Pagination">
+        <property name="limit" type="int"/>
+        <property name="offset" type="int"/>
+        <property name="nbResults" type="int"/>
+    </transfer>
+
+    <transfer name="ProductAttributeStorageCriteria" strict="true">
+        <property name="attributeKeys" type="string[]" singular="attributeKey"/>
+    </transfer>
+
+    <transfer name="ProductAttributeStorageCollection" strict="true">
+        <property name="productAttributeStorages" type="ProductAttributeStorage[]" singular="productAttributeStorage"/>
+    </transfer>
+
+    <transfer name="SynchronizationData">
+        <property name="reference" type="string"/>
+        <property name="data" type="string"/>
+        <property name="key" type="string"/>
+    </transfer>
+
+    <transfer name="Filter">
+        <property name="limit" type="int"/>
+        <property name="offset" type="int"/>
+        <property name="orderBy" type="string"/>
+    </transfer>
+
+    <transfer name="EventEntity">
+        <property name="id" type="int"/>
+    </transfer>
+
+
+    <transfer name="Quote">
+        <property name="items" type="Item[]" singular="item"/>
+    </transfer>
+
+    <transfer name="Item">
+    </transfer>
+
+    <transfer name="ProductAttributeTableCriteria" strict="true">
+        <property name="visibilityTypes" type="string[]" singular="visibilityType"/>
+    </transfer>
+
+    <transfer name="ProductAttributeTableQueryCondition" strict="true">
+        <property name="expression" type="string"/>
+        <property name="value" type="string"/>
+    </transfer>
+
+    <transfer name="ProductAttributeQueryCriteria">
+        <property name="withColumns" type="array" singular="withColumn"/>
+    </transfer>
+
+</transfers>

@@ -1,0 +1,7 @@
+<td style="vertical-align: middle;">
+    {% if metaAttributes[key]['visibility'] is defined and metaAttributes[key]['visibility'] %}
+        {% for type in metaAttributes[key]['visibility'] | split(',') %}
+            <span class="label text-bg-light">{{ type | trim }}</span>
+        {% endfor %}
+    {% endif %}
+</td>

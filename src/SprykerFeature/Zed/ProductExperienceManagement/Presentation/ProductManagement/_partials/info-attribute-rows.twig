@@ -1,0 +1,23 @@
+<div class="row">
+    <div class="col-3"><b>{{ 'Key' | trans }}</b></div>
+    <div class="col-2"><b>{{ 'Display At' | trans }}</b></div>
+    <div class="col-7"><b>{{ 'Value' | trans }}</b></div>
+</div>
+<div class="hr-line-dashed"></div>
+
+{% for name,value in attributes %}
+    <div class="row">
+        <div class="col-3"><b>{{ name }}</b></div>
+        <div class="col-2">
+            {% if metaAttributes[name] is defined and metaAttributes[name]['visibility'] %}
+                {% for type in metaAttributes[name]['visibility'] | split(',') %}
+                    <span class="label text-bg-light">{{ type | trim }}</span>
+                {% endfor %}
+            {% endif %}
+        </div>
+        <div class="col-7">{{ value | join(', ') }}</div>
+    </div>
+    {% if not loop.last %}
+        <div class="hr-line-dashed"></div>
+    {% endif %}
+{% endfor %}

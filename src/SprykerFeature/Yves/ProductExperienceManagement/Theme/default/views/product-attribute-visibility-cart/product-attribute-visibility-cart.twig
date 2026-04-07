@@ -1,0 +1,26 @@
+{% extends template('widget') %}
+
+{% define data = {
+    attributes: _widget.attributes | default([]),
+} %}
+
+{% block template %}
+    {% if data.attributes is not empty %}
+        {{ parent() }}
+    {% endif %}
+{% endblock %}
+
+{% set attributesContainerClassName = "" %}
+{% set attributesBadgeClassName = "badge badge--hollow spacing-right--small spacing-bottom--small" %}
+
+{% block body %}
+    <div class="{{ attributesContainerClassName }}">
+        {% for name, value in data.attributes %}
+            {% block attributeData %}
+                <span class="{{ attributesBadgeClassName }}">
+                    {{ ('product.attribute.' ~ name) | trans }}: {{ value is iterable ? value | join(', ') : value }}
+                </span>
+            {% endblock %}
+        {% endfor %}
+    </div>
+{% endblock %}

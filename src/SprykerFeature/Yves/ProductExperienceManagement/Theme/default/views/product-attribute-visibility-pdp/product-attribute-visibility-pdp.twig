@@ -1,0 +1,27 @@
+{% extends template('widget') %}
+
+{% define data = {
+    attributes: _widget.attributes | default([]),
+} %}
+
+{% block template %}
+    {% if data.attributes is not empty %}
+        {{ parent() }}
+    {% endif %}
+{% endblock %}
+
+{% set attributesContainerClassName = "grid" %}
+{% set attributesColumnClassName = "col col--sm-12 col--md-6 col--lg-4 col--xl-3" %}
+
+{% block body %}
+    <div class="{{ attributesContainerClassName }}">
+        {% for name, value in data.attributes %}
+            {% block attributeData %}
+                <div class="{{ attributesColumnClassName }}" itemprop="additionalProperty" itemscope itemtype="https://schema.org/PropertyValue">
+                    <strong itemprop="name">{{ ('product.attribute.' ~ name) | trans }}</strong><br>
+                    <span itemprop="value">{{ value is iterable ? value | join(', ') : value }}</span>
+                </div>
+            {% endblock %}
+        {% endfor %}
+    </div>
+{% endblock %}

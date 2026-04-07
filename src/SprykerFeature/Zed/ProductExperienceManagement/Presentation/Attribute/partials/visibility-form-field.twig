@@ -1,0 +1,11 @@
+{% if form.visibility_types is defined %}
+    <div id="visibility-types-container" class='form-group {% if form.visibility_types.vars.errors|length %}has-error{% endif %}'>
+        <h4>{{ form_label(form.visibility_types) }}</h4>
+        {{ form_widget(form.visibility_types) }}
+        {% if not readOnly %}
+            <span class="help-block">{{ 'Select where this attribute should be visible (PDP, PLP, Cart). Leave empty for internal only.' | trans }}</span>
+        {% endif %}
+
+        <hr />
+    </div>
+{% endif %}
