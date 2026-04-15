@@ -1,2 +1,11 @@
 parameters:
     level: 8
+    reportUnmatchedIgnoredErrors: false
+    ignoreErrors:
+        # SelfServicePortal is an optional dependency — classes are guarded with class_exists() at runtime.
+        - '#(Class|Instantiated class) Orm\\Zed\\SelfServicePortal\\Persistence\\SpyProductShipmentTypeQuery( not found|.*).#'
+        - '#(Class|Instantiated class) Orm\\Zed\\SelfServicePortal\\Persistence\\SpyProductClassQuery( not found|.*).#'
+        - '#(Class|Instantiated class) Orm\\Zed\\SelfServicePortal\\Persistence\\SpyProductToProductClassQuery( not found|.*).#'
+        - '#(Class|Instantiated class) Orm\\Zed\\SelfServicePortal\\Persistence\\SpyProductClass( not found|.*).#'
+        # The Yves locator method is auto-generated and not yet present in the IDE autocomplete interface.
+        - '#Call to an undefined method .+LocatorLocatorInterface::productExperienceManagement\(\).#'

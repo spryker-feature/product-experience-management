@@ -1,0 +1,5 @@
+{
+    "exclude": {
+        "spryker-feature/self-service-portal": "Optional dependency — classes are guarded with class_exists() at runtime. Install spryker-feature/self-service-portal to enable product class and shipment type import/export."
+    }
+}

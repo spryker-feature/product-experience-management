@@ -1,4 +1,37 @@
-"Display At","Display At"
+"Export Products","Export Products"
+"No import jobs found. Please create a job first to have an export definition.","No import jobs found. Please create a job first to have an export definition."
+"Create a job","Create a job"
+"Back to Jobs","Back to Jobs"
+"Select a job and click Export to download all products as CSV.","Select a job and click Export to download all products as CSV."
+Job,Job
+Export,Export
+"Import Jobs","Import Jobs"
+"Create Import Job","Create Import Job"
+Save,Save
+"Import Runs","Import Runs"
+"Create Run","Create Run"
+"Upload CSV","Upload CSV"
+"Back to Runs","Back to Runs"
+"Step 1: Download Template","Step 1: Download Template"
+"Download the CSV template with all required column headers.","Download the CSV template with all required column headers."
+"Download CSV Template","Download CSV Template"
+"Step 2: Upload Filled CSV","Step 2: Upload Filled CSV"
+"Upload & Queue Import","Upload & Queue Import"
+"Run Summary","Run Summary"
+Status,Status
+"Total Processed Lines","Total Processed Lines"
+"Successfully Processed Lines","Successfully Processed Lines"
+"Failed Lines","Failed Lines"
+"Import Started At","Import Started At"
+"Import Finished At","Import Finished At"
+"Uploaded At","Uploaded At"
+"Original File","Original File"
+"There are too many errors to display inline.","There are too many errors to display inline."
+"Download Errors CSV","Download Errors CSV"
 "Select where this attribute should be visible (PDP, PLP, Cart). Leave empty for internal only.","Select where this attribute should be visible (PDP, PLP, Cart). Leave empty for internal only."
+"Display At","Display At"
 Key,Key
 Value,Value
+Run,Run
+Details,Details
+"Import Errors","Import Errors"

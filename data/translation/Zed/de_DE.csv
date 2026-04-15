@@ -1,4 +1,37 @@
-"Display At","Anzeigen bei"
+"Export Products","Produkte exportieren"
+"No import jobs found. Please create a job first to have an export definition.","Keine Import-Jobs gefunden. Bitte erstellen Sie zuerst einen Job, um eine Exportdefinition zu erhalten."
+"Create a job","Job erstellen"
+"Back to Jobs","Zurück zu Jobs"
+"Select a job and click Export to download all products as CSV.","Wählen Sie einen Job aus und klicken Sie auf Exportieren, um alle Produkte als CSV herunterzuladen."
+Job,Job
+Export,Exportieren
+"Import Jobs",Import-Jobs
+"Create Import Job","Import-Job erstellen"
+Save,Speichern
+"Import Runs",Import-Durchläufe
+"Create Run","Durchlauf erstellen"
+"Upload CSV","CSV hochladen"
+"Back to Runs","Zurück zu Durchläufen"
+"Step 1: Download Template","Schritt 1: Vorlage herunterladen"
+"Download the CSV template with all required column headers.","Laden Sie die CSV-Vorlage mit allen erforderlichen Spaltenüberschriften herunter."
+"Download CSV Template","CSV-Vorlage herunterladen"
+"Step 2: Upload Filled CSV","Schritt 2: Ausgefüllte CSV hochladen"
+"Upload & Queue Import","Hochladen und Import einreihen"
+"Run Summary",Durchlauf-Zusammenfassung
+Status,Status
+"Total Processed Lines","Insgesamt verarbeitete Zeilen"
+"Successfully Processed Lines","Erfolgreich verarbeitete Zeilen"
+"Failed Lines","Fehlgeschlagene Zeilen"
+"Import Started At","Import gestartet am"
+"Import Finished At","Import abgeschlossen am"
+"Uploaded At","Hochgeladen am"
+"Original File",Originaldatei
+"There are too many errors to display inline.","Es gibt zu viele Fehler, um sie direkt anzuzeigen."
+"Download Errors CSV","Fehler-CSV herunterladen"
 "Select where this attribute should be visible (PDP, PLP, Cart). Leave empty for internal only.","Wählen Sie aus, wo dieses Attribut sichtbar sein soll (PDP, PLP, Warenkorb). Für interne Nutzung leer lassen."
-Key,Key
-Value,Value
+"Display At","Anzeigen bei"
+Key,Schlüssel
+Value,Wert
+Run,Run
+Details,Details
+"Import Errors",Import-Fehler

@@ -5,12 +5,29 @@
  * Use of this software requires acceptance of the Evaluation License Agreement. See LICENSE file.
  */
 
+declare(strict_types=1);
+
 namespace SprykerFeature\Zed\ProductExperienceManagement\Persistence;
 
 use Generated\Shared\Transfer\FilterTransfer;
+use Generated\Shared\Transfer\ImportJobCollectionTransfer;
+use Generated\Shared\Transfer\ImportJobCriteriaTransfer;
+use Generated\Shared\Transfer\ImportJobRunCollectionTransfer;
+use Generated\Shared\Transfer\ImportJobRunCriteriaTransfer;
+use Generated\Shared\Transfer\ImportJobRunErrorCollectionTransfer;
+use Generated\Shared\Transfer\ImportJobRunErrorCriteriaTransfer;
+use Generated\Shared\Transfer\ImportJobRunTransfer;
 
 interface ProductExperienceManagementRepositoryInterface
 {
+    public function getImportJobCollection(ImportJobCriteriaTransfer $criteriaTransfer): ImportJobCollectionTransfer;
+
+    public function getImportJobRunCollection(ImportJobRunCriteriaTransfer $criteriaTransfer): ImportJobRunCollectionTransfer;
+
+    public function findOldestPendingJobRun(): ?ImportJobRunTransfer;
+
+    public function getImportJobRunErrorCollection(ImportJobRunErrorCriteriaTransfer $criteriaTransfer): ImportJobRunErrorCollectionTransfer;
+
     /**
      * @param array<int> $productManagementAttributeIds
      *
