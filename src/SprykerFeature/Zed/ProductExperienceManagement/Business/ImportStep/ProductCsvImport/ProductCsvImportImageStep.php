@@ -258,7 +258,7 @@ class ProductCsvImportImageStep extends AbstractProductCsvImportStep implements 
             return true;
         }
 
-        return (bool)filter_var($url, FILTER_VALIDATE_URL);
+        return (bool)filter_var(str_replace(' ', '%20', $url), FILTER_VALIDATE_URL);
     }
 
     /**

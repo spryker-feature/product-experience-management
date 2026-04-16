@@ -215,7 +215,7 @@ class ProductExperienceManagementBusinessFactory extends AbstractBusinessFactory
 
     public function createProductCsvLocalizedAttributesExportStep(): ExportStepInterface
     {
-        return new ProductCsvLocalizedAttributesExportStep();
+        return new ProductCsvLocalizedAttributesExportStep($this->getUtilEncodingService());
     }
 
     public function createProductCsvUrlExportStep(): ExportStepInterface

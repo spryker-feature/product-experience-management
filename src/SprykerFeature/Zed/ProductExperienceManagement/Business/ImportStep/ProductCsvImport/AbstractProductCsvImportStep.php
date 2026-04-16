@@ -73,7 +73,7 @@ abstract class AbstractProductCsvImportStep
             $value = trim($value);
 
             if ($key !== '') {
-                $attributes[$key] = $value;
+                  $attributes[$key] = str_starts_with($value, '[') ? (json_decode($value, true) ?? $value) : $value;
             }
         }
 

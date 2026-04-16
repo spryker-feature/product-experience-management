@@ -14,9 +14,15 @@ use Orm\Zed\Product\Persistence\Map\SpyProductAbstractLocalizedAttributesTableMa
 use Orm\Zed\Product\Persistence\Map\SpyProductLocalizedAttributesTableMap;
 use Orm\Zed\Product\Persistence\SpyProductAbstractLocalizedAttributesQuery;
 use Orm\Zed\Product\Persistence\SpyProductLocalizedAttributesQuery;
+use Spryker\Service\UtilEncoding\UtilEncodingServiceInterface;
 
 class ProductCsvLocalizedAttributesExportStep extends AbstractProductCsvExportStep
 {
+    public function __construct(
+        protected UtilEncodingServiceInterface $utilEncodingService,
+    ) {
+    }
+
     protected const string ATTRIBUTE_FORMAT = '%s=%s';
 
     protected const string LOCALIZED_COLUMN_FORMAT = '%s (%s)';
@@ -240,7 +246,7 @@ class ProductCsvLocalizedAttributesExportStep extends AbstractProductCsvExportSt
 
     protected function formatAttributes(?string $attributesJson): string
     {
-        $attributes = json_decode($attributesJson ?? '', true);
+        $attributes = $this->utilEncodingService->decodeJson($attributesJson ?? '', true);
 
         if (!is_array($attributes) || $attributes === []) {
             return '';
@@ -249,7 +255,7 @@ class ProductCsvLocalizedAttributesExportStep extends AbstractProductCsvExportSt
         $attributeParts = [];
 
         foreach ($attributes as $key => $value) {
-            $attributeParts[] = sprintf(static::ATTRIBUTE_FORMAT, $key, $value);
+            $attributeParts[] = sprintf(static::ATTRIBUTE_FORMAT, $key, is_array($value) ? $this->utilEncodingService->encodeJson($value) : $value);
         }
 
         return implode(static::SEPARATOR, $attributeParts);

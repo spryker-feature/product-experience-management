@@ -314,6 +314,7 @@ class ProductCsvImportStockStep extends AbstractProductCsvImportStep implements 
         $storeToWarehouseMapping = $this->stockFacade->getStoreToWarehouseMapping();
 
         foreach ($processedConcreteSkus as $concreteSku => $skuData) {
+            $concreteSku = (string)$concreteSku;
             $abstractSku = $skuData['abstractSku'];
             $isNeverOutOfStock = $skuData['isNeverOutOfStock'];
 
