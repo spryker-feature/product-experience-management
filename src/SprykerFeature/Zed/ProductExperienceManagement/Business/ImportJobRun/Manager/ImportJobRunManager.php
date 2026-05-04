@@ -38,9 +38,6 @@ class ImportJobRunManager implements ImportJobRunManagerInterface
     ) {
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function processNextPendingRun(): void
     {
         $importJobRun = $this->repository->findOldestPendingJobRun();

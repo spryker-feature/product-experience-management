@@ -12,6 +12,7 @@ use Spryker\Client\Locale\LocaleClientInterface;
 use Spryker\Client\ProductStorage\ProductStorageClientInterface;
 use Spryker\Client\Store\StoreClientInterface;
 use SprykerFeature\Client\ProductExperienceManagement\ProductExperienceManagementClientInterface;
+use SprykerFeature\Shared\ProductExperienceManagement\ProductExperienceManagementConfig;
 
 class ProductAttributeReader implements ProductAttributeReaderInterface
 {
@@ -217,6 +218,14 @@ class ProductAttributeReader implements ProductAttributeReaderInterface
 
         foreach ($keysToLoad as $key) {
             static::$visibilityMapCache[$key] = [];
+        }
+
+        if ($productAttributeStorageCollectionTransfer->getProductAttributeStorages()->count() === 0) {
+            foreach ($keysToLoad as $key) {
+                static::$visibilityMapCache[$key] = [ProductExperienceManagementConfig::VISIBILITY_TYPE_PDP];
+            }
+
+            return;
         }
 
         foreach ($productAttributeStorageCollectionTransfer->getProductAttributeStorages() as $productAttributeStorageTransfer) {

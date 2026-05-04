@@ -25,9 +25,6 @@ class ImportJobWriter implements ImportJobWriterInterface
     ) {
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function createImportJobCollection(ImportJobCollectionRequestTransfer $collectionRequestTransfer): ImportJobCollectionResponseTransfer
     {
         $response = new ImportJobCollectionResponseTransfer();

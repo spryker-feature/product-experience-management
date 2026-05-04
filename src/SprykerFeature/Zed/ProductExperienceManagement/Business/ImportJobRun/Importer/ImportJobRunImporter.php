@@ -43,9 +43,6 @@ class ImportJobRunImporter implements ImportJobRunImporterInterface
     ) {
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function importJobRun(ImportJobRunTransfer $importJobRun): void
     {
         $stream = $this->openCsvStream($importJobRun);

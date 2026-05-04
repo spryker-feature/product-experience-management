@@ -30,6 +30,8 @@ use Spryker\Zed\Store\Business\StoreFacadeInterface;
 use Spryker\Zed\Tax\Business\TaxFacadeInterface;
 use SprykerFeature\Zed\ProductExperienceManagement\Business\Dependency\Plugin\ExportStepInterface;
 use SprykerFeature\Zed\ProductExperienceManagement\Business\Dependency\Plugin\ImportStepInterface;
+use SprykerFeature\Zed\ProductExperienceManagement\Business\Expander\ProductAttributeVisibilityExpander;
+use SprykerFeature\Zed\ProductExperienceManagement\Business\Expander\ProductAttributeVisibilityExpanderInterface;
 use SprykerFeature\Zed\ProductExperienceManagement\Business\Export\ColumnResolver\ExportColumnResolver;
 use SprykerFeature\Zed\ProductExperienceManagement\Business\Export\ColumnResolver\ExportColumnResolverInterface;
 use SprykerFeature\Zed\ProductExperienceManagement\Business\Export\DataProvider\ProductCsvExportDataProvider;
@@ -471,5 +473,10 @@ class ProductExperienceManagementBusinessFactory extends AbstractBusinessFactory
     public function getUtilEncodingService(): UtilEncodingServiceInterface
     {
         return $this->getProvidedDependency(ProductExperienceManagementDependencyProvider::SERVICE_UTIL_ENCODING);
+    }
+
+    public function createProductAttributeVisibilityExpander(): ProductAttributeVisibilityExpanderInterface
+    {
+        return new ProductAttributeVisibilityExpander();
     }
 }

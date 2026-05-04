@@ -25,9 +25,6 @@ class ImportFileWriter implements ImportFileWriterInterface
     ) {
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function writeFile(ImportJobRunFileInfoTransfer $fileInfoTransfer, string $jobType): ImportJobRunFileInfoTransfer
     {
         $originalFileName = $fileInfoTransfer->getOriginalFileNameOrFail();
