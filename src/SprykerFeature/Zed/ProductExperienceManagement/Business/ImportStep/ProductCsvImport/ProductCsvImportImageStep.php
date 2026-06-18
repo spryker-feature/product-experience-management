@@ -16,8 +16,9 @@ use Generated\Shared\Transfer\ImportStepResponseTransfer;
 use Orm\Zed\Locale\Persistence\SpyLocaleQuery;
 use Orm\Zed\Product\Persistence\SpyProductAbstractQuery;
 use Orm\Zed\Product\Persistence\SpyProductQuery;
-use Orm\Zed\ProductImage\Persistence\SpyProductImageQuery;
+use Orm\Zed\ProductImage\Persistence\SpyProductImage;
 use Orm\Zed\ProductImage\Persistence\SpyProductImageSetQuery;
+use Orm\Zed\ProductImage\Persistence\SpyProductImageSetToProductImage;
 use Orm\Zed\ProductImage\Persistence\SpyProductImageSetToProductImageQuery;
 use Spryker\Zed\Product\Dependency\ProductEvents;
 use Spryker\Zed\ProductImage\Dependency\ProductImageEvents;
@@ -386,36 +387,60 @@ class ProductCsvImportImageStep extends AbstractProductCsvImportStep implements 
             $imageSetEntity->save();
         }
 
+        $idProductImageSet = $imageSetEntity->getIdProductImageSet();
+
         foreach ($imageEntries as $entry) {
             $urlLarge = $entry['urlLarge'] !== '' ? $entry['urlLarge'] : $entry['urlSmall'];
             $urlSmall = $entry['urlSmall'] !== '' ? $entry['urlSmall'] : $entry['urlLarge'];
 
-            $imageEntity = SpyProductImageQuery::create()
-                ->filterByExternalUrlLarge($urlLarge)
-                ->filterByExternalUrlSmall($urlSmall)
-                ->findOneOrCreate();
-
-            $imageEntity->setExternalUrlLarge($urlLarge);
-            $imageEntity->setExternalUrlSmall($urlSmall);
-
-            if ($imageEntity->isNew() || $imageEntity->isModified()) {
-                $imageEntity->save();
-            }
-
-            $idProductImageSet = $imageSetEntity->getIdProductImageSet();
-            $idProductImage = $imageEntity->getIdProductImage();
-
-            $relationEntity = SpyProductImageSetToProductImageQuery::create()
-                ->filterByFkProductImageSet($idProductImageSet)
-                ->filterByFkProductImage($idProductImage)
-                ->findOneOrCreate();
-
-            $relationEntity->setSortOrder($entry['sortOrder']);
-
-            if ($relationEntity->isNew() || $relationEntity->isModified()) {
-                $relationEntity->save();
-            }
+            $this->upsertImageInSet($idProductImageSet, $entry['sortOrder'], $urlSmall, $urlLarge);
         }
+    }
+
+    protected function upsertImageInSet(int $idProductImageSet, int $sortOrder, string $urlSmall, string $urlLarge): void
+    {
+        $relationEntity = $this->findImageSetRelationBySortOrder($idProductImageSet, $sortOrder);
+
+        if ($relationEntity !== null) {
+            $this->updateImageUrls($relationEntity->getSpyProductImage(), $urlSmall, $urlLarge);
+
+            return;
+        }
+
+        $this->createImageWithRelation($idProductImageSet, $sortOrder, $urlSmall, $urlLarge);
+    }
+
+    protected function findImageSetRelationBySortOrder(int $idProductImageSet, int $sortOrder): ?SpyProductImageSetToProductImage
+    {
+        return SpyProductImageSetToProductImageQuery::create()
+            ->filterByFkProductImageSet($idProductImageSet)
+            ->filterBySortOrder($sortOrder)
+            ->joinWithSpyProductImage()
+            ->findOne();
+    }
+
+    protected function updateImageUrls(SpyProductImage $imageEntity, string $urlSmall, string $urlLarge): void
+    {
+        $imageEntity->setExternalUrlSmall($urlSmall);
+        $imageEntity->setExternalUrlLarge($urlLarge);
+
+        if ($imageEntity->isModified()) {
+            $imageEntity->save();
+        }
+    }
+
+    protected function createImageWithRelation(int $idProductImageSet, int $sortOrder, string $urlSmall, string $urlLarge): void
+    {
+        $imageEntity = new SpyProductImage();
+        $imageEntity->setExternalUrlLarge($urlLarge);
+        $imageEntity->setExternalUrlSmall($urlSmall);
+        $imageEntity->save();
+
+        $relationEntity = new SpyProductImageSetToProductImage();
+        $relationEntity->setFkProductImageSet($idProductImageSet);
+        $relationEntity->setFkProductImage($imageEntity->getIdProductImage());
+        $relationEntity->setSortOrder($sortOrder);
+        $relationEntity->save();
     }
 
     /**
