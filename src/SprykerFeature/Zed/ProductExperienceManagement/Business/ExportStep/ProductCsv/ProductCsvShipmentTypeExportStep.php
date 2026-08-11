@@ -86,8 +86,6 @@ class ProductCsvShipmentTypeExportStep extends AbstractProductCsvExportStep
      * Checks whether the product class Propel entities are available at runtime.
      * This allows the step to work out of the box when SelfServicePortal is installed,
      * without introducing a hard composer dependency on it. Will be refactored in future
-     *
-     * @return bool
      */
     protected function canExportSelfServiceContext(): bool
     {

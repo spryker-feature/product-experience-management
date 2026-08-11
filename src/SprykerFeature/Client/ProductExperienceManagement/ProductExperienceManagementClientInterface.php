@@ -19,10 +19,6 @@ interface ProductExperienceManagementClientInterface
      * - Returns `ProductAttributeStorageCollectionTransfer` with `ProductAttributeStorageTransfer` objects.
      *
      * @api
-     *
-     * @param \Generated\Shared\Transfer\ProductAttributeStorageCriteriaTransfer $productAttributeStorageCriteriaTransfer
-     *
-     * @return \Generated\Shared\Transfer\ProductAttributeStorageCollectionTransfer
      */
     public function getProductAttributeStorageCollection(
         ProductAttributeStorageCriteriaTransfer $productAttributeStorageCriteriaTransfer,
