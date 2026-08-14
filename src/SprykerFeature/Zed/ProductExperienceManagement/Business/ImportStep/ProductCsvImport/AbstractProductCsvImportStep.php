@@ -15,6 +15,8 @@ abstract class AbstractProductCsvImportStep
 
     protected const string COLUMN_CONCRETE_SKU = 'concrete_sku';
 
+    protected const string COLUMN_PRODUCT_STATUS = 'product_status';
+
     protected const string ATTRIBUTE_PAIR_SEPARATOR = ';';
 
     protected const string ATTRIBUTE_KEY_VALUE_SEPARATOR = '=';
@@ -41,6 +43,22 @@ abstract class AbstractProductCsvImportStep
     protected function resolveConcreteSku(array $row): string
     {
         return trim($row[static::COLUMN_CONCRETE_SKU] ?? '');
+    }
+
+    /**
+     * @param array<string, string> $row
+     */
+    protected function resolveProductStatus(array $row): string
+    {
+        return strtolower(trim($row[static::COLUMN_PRODUCT_STATUS] ?? ''));
+    }
+
+    /**
+     * @param array<string> $allowedProductStatuses
+     */
+    protected function formatAllowedProductStatuses(array $allowedProductStatuses): string
+    {
+        return implode(', ', $allowedProductStatuses);
     }
 
     /**

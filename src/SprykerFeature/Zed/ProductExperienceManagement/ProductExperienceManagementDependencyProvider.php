@@ -61,6 +61,8 @@ class ProductExperienceManagementDependencyProvider extends AbstractBundleDepend
 
     public const string FACADE_PRODUCT_ATTRIBUTE = 'FACADE_PRODUCT_ATTRIBUTE';
 
+    public const string FACADE_PRODUCT_APPROVAL = 'FACADE_PRODUCT_APPROVAL';
+
     public function provideBusinessLayerDependencies(Container $container): Container
     {
         $container = parent::provideBusinessLayerDependencies($container);
@@ -84,6 +86,7 @@ class ProductExperienceManagementDependencyProvider extends AbstractBundleDepend
         $container = $this->addImportPostProcessorPlugins($container);
         $container = $this->addEventBehaviorFacade($container);
         $container = $this->addProductAttributeFacade($container);
+        $container = $this->addProductApprovalFacade($container);
         $container = $this->addUtilEncodingService($container);
 
         return $container;
@@ -325,6 +328,15 @@ class ProductExperienceManagementDependencyProvider extends AbstractBundleDepend
     {
         $container->set(static::FACADE_PRODUCT_ATTRIBUTE, function (Container $container) {
             return $container->getLocator()->productAttribute()->facade();
+        });
+
+        return $container;
+    }
+
+    protected function addProductApprovalFacade(Container $container): Container
+    {
+        $container->set(static::FACADE_PRODUCT_APPROVAL, function (Container $container) {
+            return $container->getLocator()->productApproval()->facade();
         });
 
         return $container;

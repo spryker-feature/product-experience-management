@@ -25,13 +25,9 @@ class ProductCsvImportConcreteStep extends AbstractProductCsvImportStep implemen
 {
     use ActiveRecordBatchProcessorTrait;
 
-    protected const string COLUMN_PRODUCT_STATUS = 'product_status';
-
     protected const string KEY_CONCRETE_SKU = 'concreteSku';
 
     protected const string KEY_ABSTRACT_SKU = 'abstractSku';
-
-    protected const string CONCRETE_STATUS_ACTIVE = 'active';
 
     protected const string ATTRIBUTE_COLUMN_PATTERN = '/^attributes\.[a-z]{2}_[a-z]{2}$/';
 
@@ -98,6 +94,19 @@ class ProductCsvImportConcreteStep extends AbstractProductCsvImportStep implemen
         $result = new ImportRowValidationCollectionTransfer();
         $concreteSku = $this->resolveConcreteSku($row);
         $abstractSku = $this->resolveAbstractSku($row);
+        $productStatus = $this->resolveProductStatus($row);
+        $allowedProductStatuses = $this->config->getProductConcreteStatuses();
+        $productStatusFieldName = $propertyNamesInFile[static::COLUMN_PRODUCT_STATUS] ?? static::COLUMN_PRODUCT_STATUS;
+
+        if ($productStatus === '') {
+            $result->addError((new ImportStepErrorTransfer())
+                ->setCsvRowNumber($rowNumber)
+                ->setErrorMessage(sprintf('The value \'\' in field \'%s\' is not valid because the field is empty for concrete SKU \'%s\'. Expected: one of the concrete product statuses %s. Please update the value.', $productStatusFieldName, $concreteSku, $this->formatAllowedProductStatuses($allowedProductStatuses))));
+        } elseif (!in_array($productStatus, $allowedProductStatuses, true)) {
+            $result->addError((new ImportStepErrorTransfer())
+                ->setCsvRowNumber($rowNumber)
+                ->setErrorMessage(sprintf('The value \'%s\' in field \'%s\' is not valid because it is not a concrete product status for concrete SKU \'%s\'. Expected: one of the concrete product statuses %s. Please update the value.', trim($row[static::COLUMN_PRODUCT_STATUS] ?? ''), $productStatusFieldName, $concreteSku, $this->formatAllowedProductStatuses($allowedProductStatuses))));
+        }
 
         if ($abstractSku === '') {
             $result->addError((new ImportStepErrorTransfer())
@@ -205,9 +214,7 @@ class ProductCsvImportConcreteStep extends AbstractProductCsvImportStep implemen
      */
     protected function resolveIsActive(array $row): bool
     {
-        $status = trim($row[static::COLUMN_PRODUCT_STATUS] ?? '');
-
-        return strtolower($status) === static::CONCRETE_STATUS_ACTIVE;
+        return $this->resolveProductStatus($row) === $this->config->getProductConcreteStatusActive();
     }
 
     /**

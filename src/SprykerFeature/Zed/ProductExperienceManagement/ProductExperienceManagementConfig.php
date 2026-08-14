@@ -88,13 +88,29 @@ class ProductExperienceManagementConfig extends AbstractBundleConfig
      * - When the error count exceeds this threshold, errors are shown as a downloadable summary instead.
      * - Increasing this value may impact page rendering performance for large error sets.
      */
-    protected const int IMPORT_ERROR_DISPLAY_THRESHOLD = 5;
+    protected const int IMPORT_ERROR_DISPLAY_THRESHOLD = 10;
 
     /**
      * Specification:
      * - Defines the default MIME content type used when storing import files without an explicit type.
      */
     protected const string IMPORT_DEFAULT_CONTENT_TYPE = 'text/csv';
+
+    /**
+     * Specification:
+     * - Defines the concrete product status that activates a concrete product.
+     *
+     * @see \Orm\Zed\Product\Persistence\Map\SpyProductTableMap::COL_IS_ACTIVE
+     */
+    protected const string PRODUCT_CONCRETE_STATUS_ACTIVE = 'active';
+
+    /**
+     * Specification:
+     * - Defines the concrete product status that deactivates a concrete product.
+     *
+     * @see \Orm\Zed\Product\Persistence\Map\SpyProductTableMap::COL_IS_ACTIVE
+     */
+    protected const string PRODUCT_CONCRETE_STATUS_INACTIVE = 'inactive';
 
     /**
      * Specification:
@@ -242,6 +258,39 @@ class ProductExperienceManagementConfig extends AbstractBundleConfig
     public function getImportDefaultContentType(): string
     {
         return static::IMPORT_DEFAULT_CONTENT_TYPE;
+    }
+
+    /**
+     * Specification:
+     * - Returns the product status values accepted for concrete product rows during CSV import.
+     * - Abstract product approval statuses are not accepted for concrete product rows.
+     *
+     * @api
+     *
+     * @see \Orm\Zed\Product\Persistence\Map\SpyProductTableMap::COL_IS_ACTIVE
+     *
+     * @return array<string>
+     */
+    public function getProductConcreteStatuses(): array
+    {
+        return [
+            static::PRODUCT_CONCRETE_STATUS_ACTIVE,
+            static::PRODUCT_CONCRETE_STATUS_INACTIVE,
+        ];
+    }
+
+    /**
+     * Specification:
+     * - Returns the concrete product status value that activates a concrete product during CSV import.
+     * - Any other accepted concrete product status leaves the concrete product inactive.
+     *
+     * @api
+     *
+     * @see \Orm\Zed\Product\Persistence\Map\SpyProductTableMap::COL_IS_ACTIVE
+     */
+    public function getProductConcreteStatusActive(): string
+    {
+        return static::PRODUCT_CONCRETE_STATUS_ACTIVE;
     }
 
     /**

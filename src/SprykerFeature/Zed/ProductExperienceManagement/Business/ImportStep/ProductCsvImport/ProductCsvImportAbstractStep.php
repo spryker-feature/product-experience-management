@@ -17,6 +17,7 @@ use Orm\Zed\Product\Persistence\SpyProductAbstractQuery;
 use Orm\Zed\Tax\Persistence\SpyTaxSetQuery;
 use Spryker\Service\UtilEncoding\UtilEncodingServiceInterface;
 use Spryker\Zed\Product\Dependency\ProductEvents;
+use Spryker\Zed\ProductApproval\Business\ProductApprovalFacadeInterface;
 use Spryker\Zed\Propel\Persistence\BatchProcessor\ActiveRecordBatchProcessorTrait;
 use SprykerFeature\Zed\ProductExperienceManagement\Business\Dependency\Plugin\ImportStepInterface;
 
@@ -24,14 +25,18 @@ class ProductCsvImportAbstractStep extends AbstractProductCsvImportStep implemen
 {
     use ActiveRecordBatchProcessorTrait;
 
-    protected const string COLUMN_PRODUCT_STATUS = 'product_status';
-
     protected const string COLUMN_TAX_SET_NAME = 'tax_set_name';
 
     protected const string ATTRIBUTE_COLUMN_PATTERN = '/^attributes\.[a-z]{2}_[a-z]{2}$/';
 
+    /**
+     * @see \Spryker\Shared\ProductApproval\ProductApprovalConfig::STATUS_DRAFT
+     */
+    protected const string PRODUCT_ABSTRACT_STATUS_DRAFT = 'draft';
+
     public function __construct(
         protected UtilEncodingServiceInterface $utilEncodingService,
+        protected ProductApprovalFacadeInterface $productApprovalFacade,
     ) {
     }
 
@@ -93,6 +98,9 @@ class ProductCsvImportAbstractStep extends AbstractProductCsvImportStep implemen
     {
         $result = new ImportRowValidationCollectionTransfer();
         $taxSetName = $this->resolveTaxSetName($row);
+        $productStatus = $this->resolveProductStatus($row);
+        $allowedProductStatuses = $this->getAllowedProductAbstractStatuses();
+        $productStatusFieldName = $propertyNamesInFile[static::COLUMN_PRODUCT_STATUS] ?? static::COLUMN_PRODUCT_STATUS;
 
         if ($this->resolveAbstractSku($row) === '') {
             $result->addError((new ImportStepErrorTransfer())
@@ -100,10 +108,14 @@ class ProductCsvImportAbstractStep extends AbstractProductCsvImportStep implemen
                 ->setErrorMessage(sprintf('The value \'\' in field \'%s\' is not valid because the field is empty. Expected: a non-empty product abstract SKU. Please update the value.', $propertyNamesInFile[static::COLUMN_ABSTRACT_SKU] ?? static::COLUMN_ABSTRACT_SKU)));
         }
 
-        if ($this->resolveProductStatus($row) === '') {
+        if ($productStatus === '') {
             $result->addError((new ImportStepErrorTransfer())
                 ->setCsvRowNumber($rowNumber)
-                ->setErrorMessage(sprintf('The value \'\' in field \'%s\' is not valid because the field is empty. Expected: a product status (e.g. approved). Please update the value.', $propertyNamesInFile[static::COLUMN_PRODUCT_STATUS] ?? static::COLUMN_PRODUCT_STATUS)));
+                ->setErrorMessage(sprintf('The value \'\' in field \'%s\' is not valid because the field is empty. Expected: one of the abstract product statuses %s. Please update the value.', $productStatusFieldName, $this->formatAllowedProductStatuses($allowedProductStatuses))));
+        } elseif (!in_array($productStatus, $allowedProductStatuses, true)) {
+            $result->addError((new ImportStepErrorTransfer())
+                ->setCsvRowNumber($rowNumber)
+                ->setErrorMessage(sprintf('The value \'%s\' in field \'%s\' is not valid because it is not an abstract product status. Expected: one of the abstract product statuses %s. Please update the value.', trim($row[static::COLUMN_PRODUCT_STATUS] ?? ''), $productStatusFieldName, $this->formatAllowedProductStatuses($allowedProductStatuses))));
         }
 
         if ($taxSetName === '') {
@@ -120,19 +132,22 @@ class ProductCsvImportAbstractStep extends AbstractProductCsvImportStep implemen
     }
 
     /**
-     * @param array<string, string> $row
+     * @return array<string>
      */
-    protected function isProductConcreteRow(array $row): bool
+    protected function getAllowedProductAbstractStatuses(): array
     {
-        return trim($row[static::COLUMN_CONCRETE_SKU] ?? '') !== '';
+        return array_merge(
+            [static::PRODUCT_ABSTRACT_STATUS_DRAFT],
+            $this->productApprovalFacade->getApplicableApprovalStatuses(static::PRODUCT_ABSTRACT_STATUS_DRAFT),
+        );
     }
 
     /**
      * @param array<string, string> $row
      */
-    protected function resolveProductStatus(array $row): string
+    protected function isProductConcreteRow(array $row): bool
     {
-        return trim($row[static::COLUMN_PRODUCT_STATUS] ?? '');
+        return trim($row[static::COLUMN_CONCRETE_SKU] ?? '') !== '';
     }
 
     /**

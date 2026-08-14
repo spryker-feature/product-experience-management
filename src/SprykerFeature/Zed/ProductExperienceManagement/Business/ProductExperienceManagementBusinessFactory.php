@@ -21,6 +21,7 @@ use Spryker\Zed\Merchant\Business\MerchantFacadeInterface;
 use Spryker\Zed\MerchantProduct\Business\MerchantProductFacadeInterface;
 use Spryker\Zed\PriceProduct\Business\PriceProductFacadeInterface;
 use Spryker\Zed\Product\Business\ProductFacadeInterface;
+use Spryker\Zed\ProductApproval\Business\ProductApprovalFacadeInterface;
 use Spryker\Zed\ProductAttribute\Business\ProductAttributeFacadeInterface;
 use Spryker\Zed\ProductCategory\Business\ProductCategoryFacadeInterface;
 use Spryker\Zed\ProductImage\Business\ProductImageFacadeInterface;
@@ -279,7 +280,7 @@ class ProductExperienceManagementBusinessFactory extends AbstractBusinessFactory
 
     public function createProductCsvImportAbstractStep(): ProductCsvImportAbstractStep
     {
-        return new ProductCsvImportAbstractStep($this->getUtilEncodingService());
+        return new ProductCsvImportAbstractStep($this->getUtilEncodingService(), $this->getProductApprovalFacade());
     }
 
     public function createProductCsvImportConcreteStep(): ImportStepInterface
@@ -468,6 +469,11 @@ class ProductExperienceManagementBusinessFactory extends AbstractBusinessFactory
     public function getProductAttributeFacade(): ProductAttributeFacadeInterface
     {
         return $this->getProvidedDependency(ProductExperienceManagementDependencyProvider::FACADE_PRODUCT_ATTRIBUTE);
+    }
+
+    public function getProductApprovalFacade(): ProductApprovalFacadeInterface
+    {
+        return $this->getProvidedDependency(ProductExperienceManagementDependencyProvider::FACADE_PRODUCT_APPROVAL);
     }
 
     public function getUtilEncodingService(): UtilEncodingServiceInterface
