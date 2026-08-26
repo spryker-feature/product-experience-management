@@ -305,7 +305,7 @@ class ProductExperienceManagementBusinessFactory extends AbstractBusinessFactory
 
     public function createProductCsvImportUrlStep(): ImportStepInterface
     {
-        return new ProductCsvImportUrlStep();
+        return new ProductCsvImportUrlStep($this->getProductFacade());
     }
 
     public function createProductCsvImportPriceStep(): ImportStepInterface

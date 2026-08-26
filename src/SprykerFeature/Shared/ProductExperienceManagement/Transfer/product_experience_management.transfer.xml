@@ -263,4 +263,19 @@
         <property name="name" type="string" description="The name of an entity (e.g., user, category, product, role)."/>
     </transfer>
 
+    <transfer name="ProductAbstract">
+        <property name="idProductAbstract" type="int"/>
+        <property name="sku" type="string"/>
+        <property name="localizedAttributes" type="LocalizedAttributes[]" singular="localizedAttributes"/>
+    </transfer>
+
+    <transfer name="LocalizedAttributes">
+        <property name="name" type="string"/>
+        <property name="locale" type="Locale"/>
+    </transfer>
+
+    <transfer name="Locale">
+        <property name="idLocale" type="int"/>
+    </transfer>
+
 </transfers>

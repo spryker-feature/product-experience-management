@@ -13,9 +13,14 @@ use Generated\Shared\Transfer\ImportPublishEventTransfer;
 use Generated\Shared\Transfer\ImportRowValidationCollectionTransfer;
 use Generated\Shared\Transfer\ImportStepErrorTransfer;
 use Generated\Shared\Transfer\ImportStepResponseTransfer;
+use Generated\Shared\Transfer\LocaleTransfer;
+use Generated\Shared\Transfer\LocalizedAttributesTransfer;
+use Generated\Shared\Transfer\ProductAbstractTransfer;
 use Orm\Zed\Locale\Persistence\SpyLocaleQuery;
+use Orm\Zed\Product\Persistence\SpyProductAbstractLocalizedAttributesQuery;
 use Orm\Zed\Product\Persistence\SpyProductAbstractQuery;
 use Orm\Zed\Url\Persistence\SpyUrlQuery;
+use Spryker\Zed\Product\Business\ProductFacadeInterface;
 use Spryker\Zed\Product\Dependency\ProductEvents;
 use Spryker\Zed\Propel\Persistence\BatchProcessor\ActiveRecordBatchProcessorTrait;
 use Spryker\Zed\Url\Dependency\UrlEvents;
@@ -34,6 +39,10 @@ class ProductCsvImportUrlStep extends AbstractProductCsvImportStep implements Im
      * @var array<string, \Orm\Zed\Locale\Persistence\SpyLocale|null>
      */
     protected static array $localeCache = [];
+
+    public function __construct(protected ProductFacadeInterface $productFacade)
+    {
+    }
 
     /**
      * {@inheritDoc}
@@ -68,9 +77,77 @@ class ProductCsvImportUrlStep extends AbstractProductCsvImportStep implements Im
         }
 
         $this->commit();
+        $this->generateMissingUrls($processedProductAbstractIds);
         $this->addPublishEvents($processedProductAbstractIds, $response);
 
         return $response;
+    }
+
+    /**
+     * @param array<int|null> $productAbstractIds
+     */
+    protected function generateMissingUrls(array $productAbstractIds): void
+    {
+        $productAbstractIdsWithoutUrl = $this->findProductAbstractIdsWithoutUrl(
+            array_values(array_unique(array_filter($productAbstractIds))),
+        );
+
+        if ($productAbstractIdsWithoutUrl === []) {
+            return;
+        }
+
+        $this->productFacade->updateProductsUrl($this->buildProductAbstractTransfers($productAbstractIdsWithoutUrl));
+    }
+
+    /**
+     * @param array<int> $productAbstractIds
+     *
+     * @return array<int>
+     */
+    protected function findProductAbstractIdsWithoutUrl(array $productAbstractIds): array
+    {
+        if ($productAbstractIds === []) {
+            return [];
+        }
+
+        $productAbstractIdsWithUrl = SpyUrlQuery::create()
+            ->filterByFkResourceProductAbstract_In($productAbstractIds)
+            ->select(['FkResourceProductAbstract'])
+            ->find()
+            ->getData();
+
+        return array_values(array_diff($productAbstractIds, array_map('intval', $productAbstractIdsWithUrl)));
+    }
+
+    /**
+     * @param array<int> $productAbstractIds
+     *
+     * @return array<\Generated\Shared\Transfer\ProductAbstractTransfer>
+     */
+    protected function buildProductAbstractTransfers(array $productAbstractIds): array
+    {
+        $abstractSkusByIdProductAbstract = array_flip(array_filter(static::$productAbstractIdCache));
+        $productAbstractTransfers = [];
+
+        foreach ($productAbstractIds as $idProductAbstract) {
+            $productAbstractTransfers[$idProductAbstract] = (new ProductAbstractTransfer())
+                ->setIdProductAbstract($idProductAbstract)
+                ->setSku($abstractSkusByIdProductAbstract[$idProductAbstract] ?? null);
+        }
+
+        $localizedAttributesEntities = SpyProductAbstractLocalizedAttributesQuery::create()
+            ->filterByFkProductAbstract_In($productAbstractIds)
+            ->find();
+
+        foreach ($localizedAttributesEntities as $localizedAttributesEntity) {
+            $productAbstractTransfers[$localizedAttributesEntity->getFkProductAbstract()]->addLocalizedAttributes(
+                (new LocalizedAttributesTransfer())
+                    ->setName($localizedAttributesEntity->getName())
+                    ->setLocale((new LocaleTransfer())->setIdLocale($localizedAttributesEntity->getFkLocale())),
+            );
+        }
+
+        return array_values($productAbstractTransfers);
     }
 
     /**
