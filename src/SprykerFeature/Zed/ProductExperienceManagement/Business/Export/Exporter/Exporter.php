@@ -7,8 +7,9 @@
 
 declare(strict_types=1);
 
-namespace SprykerFeature\Zed\ProductExperienceManagement\Business\Export\Manager;
+namespace SprykerFeature\Zed\ProductExperienceManagement\Business\Export\Exporter;
 
+use Generated\Shared\Transfer\ErrorTransfer;
 use Generated\Shared\Transfer\ImportJobCriteriaTransfer;
 use Generated\Shared\Transfer\ImportJobExportResultTransfer;
 use Generated\Shared\Transfer\ImportJobRunFileInfoTransfer;
@@ -22,8 +23,10 @@ use SprykerFeature\Zed\ProductExperienceManagement\Business\Export\Writer\Export
 use SprykerFeature\Zed\ProductExperienceManagement\Persistence\ProductExperienceManagementRepositoryInterface;
 use SprykerFeature\Zed\ProductExperienceManagement\ProductExperienceManagementConfig;
 
-class ExportManager implements ExportManagerInterface
+class Exporter implements ExporterInterface
 {
+    protected const string ERROR_MESSAGE_IMPORT_JOB_NOT_FOUND = 'No import job matches the given export criteria.';
+
     /**
      * @param array<\SprykerFeature\Zed\ProductExperienceManagement\Business\Dependency\Plugin\ImportSchemaPluginInterface> $schemaPlugins
      */
@@ -39,10 +42,18 @@ class ExportManager implements ExportManagerInterface
 
     public function exportData(ImportJobCriteriaTransfer $criteriaTransfer): ImportJobExportResultTransfer
     {
-        $importJob = $this->resolveImportJob($criteriaTransfer);
+        $importJob = $this->findImportJob($criteriaTransfer);
+
+        if ($importJob === null) {
+            return (new ImportJobExportResultTransfer())
+                ->setIsSuccessful(false)
+                ->addError((new ErrorTransfer())->setMessage(static::ERROR_MESSAGE_IMPORT_JOB_NOT_FOUND));
+        }
+
         $columnHeaders = $this->resolveColumnHeaders($importJob);
 
         $exportResult = (new ImportJobExportResultTransfer())
+            ->setIsSuccessful(true)
             ->setType($importJob->getTypeOrFail())
             ->setColumns($columnHeaders);
 
@@ -72,11 +83,13 @@ class ExportManager implements ExportManagerInterface
         );
     }
 
-    protected function resolveImportJob(ImportJobCriteriaTransfer $criteriaTransfer): ImportJobTransfer
+    protected function findImportJob(ImportJobCriteriaTransfer $criteriaTransfer): ?ImportJobTransfer
     {
-        $importJobCollection = $this->repository->getImportJobCollection($criteriaTransfer);
-
-        return $importJobCollection->getImportJobs()->getIterator()->current();
+        return $this->repository
+            ->getImportJobCollection($criteriaTransfer)
+            ->getImportJobs()
+            ->getIterator()
+            ->current() ?: null;
     }
 
     protected function resolveExportSchemaPlugin(ImportJobTransfer $importJob): ExportSchemaPluginInterface

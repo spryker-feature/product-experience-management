@@ -12,7 +12,6 @@ namespace SprykerFeature\Zed\ProductExperienceManagement\Communication\Controlle
 use Generated\Shared\Transfer\FileSystemStreamTransfer;
 use Generated\Shared\Transfer\ImportJobConditionsTransfer;
 use Generated\Shared\Transfer\ImportJobCriteriaTransfer;
-use Spryker\Zed\Kernel\Communication\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -22,10 +21,8 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  * @method \SprykerFeature\Zed\ProductExperienceManagement\Communication\ProductExperienceManagementCommunicationFactory getFactory()
  * @method \SprykerFeature\Zed\ProductExperienceManagement\Business\ProductExperienceManagementFacade getFacade()
  */
-class ExportController extends AbstractController
+class ExportController extends AbstractImportJobController
 {
-    protected const string PARAM_IMPORT_JOB_REFERENCE = 'importJobReference';
-
     protected const string CONTENT_TYPE_CSV = 'text/csv';
 
     /**
@@ -42,11 +39,7 @@ class ExportController extends AbstractController
 
     public function downloadAction(Request $request): Response
     {
-        $importJobReference = $request->query->getString(static::PARAM_IMPORT_JOB_REFERENCE);
-
-        if ($importJobReference === '') {
-            throw new NotFoundHttpException(sprintf('Parameter "%s" is required.', static::PARAM_IMPORT_JOB_REFERENCE));
-        }
+        $importJobReference = $this->resolveImportJobByRequest($request)->getReferenceOrFail();
 
         $criteria = (new ImportJobCriteriaTransfer())
             ->setImportJobConditions(
@@ -55,6 +48,10 @@ class ExportController extends AbstractController
             ->setIsWithData(true);
 
         $exportResult = $this->getFacade()->exportData($criteria);
+
+        if ($exportResult->getIsSuccessful() !== true) {
+            throw new NotFoundHttpException(sprintf(static::ERROR_MESSAGE_IMPORT_JOB_NOT_FOUND, $importJobReference));
+        }
 
         $fileInfo = $exportResult->getFileInfoOrFail();
         $fileSystemService = $this->getFactory()->getFileSystemService();

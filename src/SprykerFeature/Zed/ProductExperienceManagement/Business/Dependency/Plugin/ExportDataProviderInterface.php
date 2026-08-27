@@ -13,7 +13,7 @@ interface ExportDataProviderInterface
 {
     /**
      * Internal column key that every implementation MUST include in returned rows.
-     * Used as a cursor by ExportManager to fetch the next batch without OFFSET.
+     * Used as a cursor by Exporter to fetch the next batch without OFFSET.
      */
     public const string INTERNAL_COLUMN_CURSOR_ID = '_cursor_id';
 

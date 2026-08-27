@@ -81,6 +81,7 @@ interface ProductExperienceManagementFacadeInterface
       * - Resolves placeholders ({locale}, {store}, etc.) using actual system configuration from stores, locales.
       * - When `ImportJobCriteriaTransfer.isWithData` is true, runs export steps and populates rows with product data.
       * - When `ImportJobCriteriaTransfer.isWithData` is false or not set, returns empty rows (template only mode).
+      * - Returns an unsuccessful result with an error message when no import job matches the provided criteria.
       *
       * @api
       */

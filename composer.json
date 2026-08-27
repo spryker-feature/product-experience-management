@@ -52,6 +52,9 @@
         "spryker/queue": "*",
         "spryker/testify": "*"
     },
+    "suggest": {
+        "spryker-feature/self-service-portal": "Enables product class and shipment type import/export. Install dependency to get SelfServicePortal-specific data included in import and export operations."
+    },
     "autoload": {
         "psr-4": {
             "SprykerFeature\\": "src/SprykerFeature/"
@@ -61,9 +64,6 @@
         "psr-4": {
             "SprykerFeatureTest\\": "tests/SprykerFeatureTest/"
         }
-    },
-    "suggest": {
-        "spryker-feature/self-service-portal": "Enables product class and shipment type import/export. Install dependency to get SelfServicePortal-specific data included in import and export operations."
     },
     "minimum-stability": "dev",
     "prefer-stable": true,

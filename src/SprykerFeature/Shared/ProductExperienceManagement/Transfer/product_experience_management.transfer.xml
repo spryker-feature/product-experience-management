@@ -124,6 +124,8 @@
         <property name="columns" type="string[]" singular="column"/>
         <property name="rows" type="array" singular="row"/>
         <property name="fileInfo" type="ImportJobRunFileInfo"/>
+        <property name="isSuccessful" type="bool"/>
+        <property name="errors" type="Error[]" singular="error"/>
     </transfer>
 
     <!-- Step response -->

@@ -27,6 +27,10 @@ use SprykerFeatureTest\Zed\ProductExperienceManagement\ProductExperienceManageme
  */
 class ExportByJobCriteriaTest extends Unit
 {
+    protected const string REFERENCE_NON_EXISTENT = 'non-existent-import-job-reference';
+
+    protected const string ERROR_MESSAGE_IMPORT_JOB_NOT_FOUND = 'No import job matches the given export criteria.';
+
     protected ProductExperienceManagementBusinessTester $tester;
 
     protected function setUp(): void
@@ -111,5 +115,25 @@ class ExportByJobCriteriaTest extends Unit
 
         $this->assertTrue($hasLocalizedName, 'Expected localized Name column');
         $this->assertTrue($hasImageColumn, 'Expected Image column with expanded placeholders');
+    }
+
+    public function testExportDataReturnsUnsuccessfulResultWhenImportJobDoesNotExist(): void
+    {
+        // Arrange
+        $criteriaTransfer = (new ImportJobCriteriaTransfer())
+            ->setImportJobConditions(
+                (new ImportJobConditionsTransfer())->addReference(static::REFERENCE_NON_EXISTENT),
+            );
+
+        // Act
+        $exportResult = $this->tester->getFacade()->exportData($criteriaTransfer);
+
+        // Assert
+        $this->assertFalse($exportResult->getIsSuccessful());
+        $this->assertCount(1, $exportResult->getErrors());
+        $this->assertSame(
+            static::ERROR_MESSAGE_IMPORT_JOB_NOT_FOUND,
+            $exportResult->getErrors()->getIterator()->current()->getMessage(),
+        );
     }
 }

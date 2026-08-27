@@ -9,16 +9,11 @@ declare(strict_types=1);
 
 namespace SprykerFeature\Zed\ProductExperienceManagement\Communication\Controller;
 
-use Generated\Shared\Transfer\ImportJobConditionsTransfer;
-use Generated\Shared\Transfer\ImportJobCriteriaTransfer;
 use Generated\Shared\Transfer\ImportJobRunCollectionRequestTransfer;
-use Generated\Shared\Transfer\ImportJobRunConditionsTransfer;
-use Generated\Shared\Transfer\ImportJobRunCriteriaTransfer;
 use Generated\Shared\Transfer\ImportJobRunErrorConditionsTransfer;
 use Generated\Shared\Transfer\ImportJobRunErrorCriteriaTransfer;
 use Generated\Shared\Transfer\ImportJobRunFileInfoTransfer;
 use Generated\Shared\Transfer\ImportJobRunTransfer;
-use Generated\Shared\Transfer\ImportJobTransfer;
 use Spryker\Zed\Kernel\Communication\Controller\AbstractController;
 use SprykerFeature\Zed\ProductExperienceManagement\Communication\Form\ImportJobRunForm;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -26,7 +21,6 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * @method \SprykerFeature\Zed\ProductExperienceManagement\Communication\ProductExperienceManagementCommunicationFactory getFactory()
@@ -35,6 +29,11 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 class RunController extends AbstractController
 {
     protected const string ROUTE_RUN_INDEX = '/product-experience-management/run/index';
+
+    /**
+     * @uses \SprykerFeature\Zed\ProductExperienceManagement\Communication\Controller\JobController::indexAction()
+     */
+    protected const string ROUTE_JOB_INDEX = '/product-experience-management/job/index';
 
     protected const string ROUTE_RUN_DOWNLOAD_ERRORS = '/product-experience-management/run/download-errors';
 
@@ -46,19 +45,37 @@ class RunController extends AbstractController
 
     protected const string PARAM_ID_IMPORT_JOB_RUN = 'idImportJobRun';
 
+    protected const string ERROR_MESSAGE_IMPORT_JOB_RUN_DOES_NOT_EXIST = 'Import run with ID %id% does not exist.';
+
+    protected const string ERROR_MESSAGE_IMPORT_JOB_DOES_NOT_EXIST = 'Import job with ID %id% does not exist.';
+
+    protected const string ERROR_MESSAGE_IMPORT_JOB_REFERENCE_DOES_NOT_EXIST = 'Import job with reference %reference% does not exist.';
+
+    protected const string ERROR_MESSAGE_PARAMETER_ID = '%id%';
+
+    protected const string ERROR_MESSAGE_PARAMETER_REFERENCE = '%reference%';
+
     /**
-     * @return array<string, mixed>
+     * @return \Symfony\Component\HttpFoundation\Response|array<string, mixed>
      */
-    public function indexAction(Request $request): array
+    public function indexAction(Request $request): array|Response
     {
         $idImportJob = $this->castId($request->query->get(static::PARAM_ID_IMPORT_JOB));
-        $table = $this->getFactory()->createImportJobRunTable($idImportJob);
-        $importJob = $this->resolveImportJobById($idImportJob);
+
+        $importJobTransfer = $this->getFactory()->createImportJobReader()->findImportJobById($idImportJob);
+
+        if ($importJobTransfer === null) {
+            $this->addErrorMessage(static::ERROR_MESSAGE_IMPORT_JOB_DOES_NOT_EXIST, [
+                static::ERROR_MESSAGE_PARAMETER_ID => $idImportJob,
+            ]);
+
+            return $this->redirectResponse(static::ROUTE_JOB_INDEX);
+        }
 
         return $this->viewResponse([
-            'table' => $table->render(),
+            'table' => $this->getFactory()->createImportJobRunTable($idImportJob)->render(),
             'idImportJob' => $idImportJob,
-            'importJobReference' => $importJob->getReference() ?? '',
+            'importJobReference' => $importJobTransfer->getReference() ?? '',
         ]);
     }
 
@@ -76,7 +93,16 @@ class RunController extends AbstractController
     public function createAction(Request $request): array|Response
     {
         $importJobReference = (string)$request->query->get(static::PARAM_IMPORT_JOB_REFERENCE);
-        $importJob = $this->resolveImportJobByReference($importJobReference);
+
+        $importJobTransfer = $this->getFactory()->createImportJobReader()->findImportJobByReference($importJobReference);
+
+        if ($importJobTransfer === null) {
+            $this->addErrorMessage(static::ERROR_MESSAGE_IMPORT_JOB_REFERENCE_DOES_NOT_EXIST, [
+                static::ERROR_MESSAGE_PARAMETER_REFERENCE => $importJobReference,
+            ]);
+
+            return $this->redirectResponse(static::ROUTE_JOB_INDEX);
+        }
 
         $form = $this->getFactory()->createImportJobRunForm();
         $form->handleRequest($request);
@@ -103,7 +129,7 @@ class RunController extends AbstractController
 
                 return $this->viewResponse([
                     'form' => $form->createView(),
-                    'idImportJob' => $importJob->getIdImportJob(),
+                    'idImportJob' => $importJobTransfer->getIdImportJob(),
                     'templateDownloadUrl' => sprintf('%s?%s=%s', static::ROUTE_TEMPLATE_DOWNLOAD, static::PARAM_IMPORT_JOB_REFERENCE, urlencode($importJobReference)),
                 ]);
             }
@@ -117,23 +143,27 @@ class RunController extends AbstractController
 
         return $this->viewResponse([
             'form' => $form->createView(),
-            'idImportJob' => $importJob->getIdImportJob(),
+            'idImportJob' => $importJobTransfer->getIdImportJob(),
             'templateDownloadUrl' => sprintf('%s?%s=%s', static::ROUTE_TEMPLATE_DOWNLOAD, static::PARAM_IMPORT_JOB_REFERENCE, urlencode($importJobReference)),
         ]);
     }
 
     /**
-     * @return array<string, mixed>
+     * @return \Symfony\Component\HttpFoundation\Response|array<string, mixed>
      */
-    public function detailAction(Request $request): array
+    public function detailAction(Request $request): array|Response
     {
         $idImportJobRun = $this->castId($request->query->get(static::PARAM_ID_IMPORT_JOB_RUN));
 
-        $conditions = (new ImportJobRunConditionsTransfer())->addIdImportJobRun($idImportJobRun);
-        $criteria = (new ImportJobRunCriteriaTransfer())->setImportJobRunConditions($conditions);
+        $importJobRunTransfer = $this->getFactory()->createImportJobReader()->findImportJobRun($idImportJobRun);
 
-        $jobRunCollection = $this->getFacade()->getImportJobRunCollection($criteria);
-        $jobRun = $jobRunCollection->getImportJobRuns()->offsetGet(0);
+        if ($importJobRunTransfer === null) {
+            $this->addErrorMessage(static::ERROR_MESSAGE_IMPORT_JOB_RUN_DOES_NOT_EXIST, [
+                static::ERROR_MESSAGE_PARAMETER_ID => $idImportJobRun,
+            ]);
+
+            return $this->redirectResponse(static::ROUTE_JOB_INDEX);
+        }
 
         $errorConditions = (new ImportJobRunErrorConditionsTransfer())->addIdImportJobRun($idImportJobRun);
         $errorCriteria = (new ImportJobRunErrorCriteriaTransfer())->setImportJobRunErrorConditions($errorConditions);
@@ -144,7 +174,7 @@ class RunController extends AbstractController
         $showErrorsInline = $errorCount <= $errorThreshold;
 
         return $this->viewResponse([
-            'jobRun' => $jobRun,
+            'jobRun' => $importJobRunTransfer,
             'errorCount' => $errorCount,
             'showErrorsInline' => $showErrorsInline,
             'inlineErrors' => $showErrorsInline ? $errorCollection->getImportJobRunErrors() : null,
@@ -210,43 +240,5 @@ class RunController extends AbstractController
             ->setOriginalFileName($uploadedFile->getClientOriginalName())
             ->setContentType($uploadedFile->getMimeType() ?: 'text/csv')
             ->setSize((int)$uploadedFile->getSize());
-    }
-
-    protected function resolveImportJobByReference(string $reference): ImportJobTransfer
-    {
-        $criteria = (new ImportJobCriteriaTransfer())
-            ->setImportJobConditions(
-                (new ImportJobConditionsTransfer())->addReference($reference),
-            );
-
-        $collection = $this->getFacade()->getImportJobCollection($criteria);
-        $importJobs = $collection->getImportJobs();
-
-        if ($importJobs->count() === 0) {
-            throw new NotFoundHttpException(
-                sprintf('Import job with reference "%s" not found.', $reference),
-            );
-        }
-
-        return $importJobs->getIterator()->current();
-    }
-
-    protected function resolveImportJobById(int $idImportJob): ImportJobTransfer
-    {
-        $criteria = (new ImportJobCriteriaTransfer())
-            ->setImportJobConditions(
-                (new ImportJobConditionsTransfer())->addIdImportJob($idImportJob),
-            );
-
-        $collection = $this->getFacade()->getImportJobCollection($criteria);
-        $importJobs = $collection->getImportJobs();
-
-        if ($importJobs->count() === 0) {
-            throw new NotFoundHttpException(
-                sprintf('Import job with ID %d not found.', $idImportJob),
-            );
-        }
-
-        return $importJobs->getIterator()->current();
     }
 }

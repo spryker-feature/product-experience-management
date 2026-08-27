@@ -35,3 +35,6 @@ Value,Value
 Run,Run
 Details,Details
 "Import Errors","Import Errors"
+"Import run with ID %id% does not exist.","Import run with ID %id% does not exist."
+"Import job with ID %id% does not exist.","Import job with ID %id% does not exist."
+"Import job with reference %reference% does not exist.","Import job with reference %reference% does not exist."

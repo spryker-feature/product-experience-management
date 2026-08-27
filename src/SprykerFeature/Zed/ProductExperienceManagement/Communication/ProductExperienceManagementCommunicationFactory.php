@@ -21,6 +21,8 @@ use SprykerFeature\Zed\ProductExperienceManagement\Communication\Form\DataProvid
 use SprykerFeature\Zed\ProductExperienceManagement\Communication\Form\DataProvider\ImportJobRunFormDataProvider;
 use SprykerFeature\Zed\ProductExperienceManagement\Communication\Form\ImportJobForm;
 use SprykerFeature\Zed\ProductExperienceManagement\Communication\Form\ImportJobRunForm;
+use SprykerFeature\Zed\ProductExperienceManagement\Communication\Reader\ImportJobReader;
+use SprykerFeature\Zed\ProductExperienceManagement\Communication\Reader\ImportJobReaderInterface;
 use SprykerFeature\Zed\ProductExperienceManagement\Communication\Table\ImportJobRunTable;
 use SprykerFeature\Zed\ProductExperienceManagement\Communication\Table\ImportJobTable;
 use SprykerFeature\Zed\ProductExperienceManagement\ProductExperienceManagementDependencyProvider;
@@ -85,6 +87,11 @@ class ProductExperienceManagementCommunicationFactory extends AbstractCommunicat
         return new ImportJobRunFormDataProvider(
             $this->getConfig(),
         );
+    }
+
+    public function createImportJobReader(): ImportJobReaderInterface
+    {
+        return new ImportJobReader($this->getFacade());
     }
 
     public function getFileSystemService(): FileSystemServiceInterface

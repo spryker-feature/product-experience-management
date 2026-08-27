@@ -36,8 +36,8 @@ use SprykerFeature\Zed\ProductExperienceManagement\Business\Expander\ProductAttr
 use SprykerFeature\Zed\ProductExperienceManagement\Business\Export\ColumnResolver\ExportColumnResolver;
 use SprykerFeature\Zed\ProductExperienceManagement\Business\Export\ColumnResolver\ExportColumnResolverInterface;
 use SprykerFeature\Zed\ProductExperienceManagement\Business\Export\DataProvider\ProductCsvExportDataProvider;
-use SprykerFeature\Zed\ProductExperienceManagement\Business\Export\Manager\ExportManager;
-use SprykerFeature\Zed\ProductExperienceManagement\Business\Export\Manager\ExportManagerInterface;
+use SprykerFeature\Zed\ProductExperienceManagement\Business\Export\Exporter\Exporter;
+use SprykerFeature\Zed\ProductExperienceManagement\Business\Export\Exporter\ExporterInterface;
 use SprykerFeature\Zed\ProductExperienceManagement\Business\Export\PlaceholderProvider\ExportPlaceholderProviderInterface;
 use SprykerFeature\Zed\ProductExperienceManagement\Business\Export\PlaceholderProvider\ProductCsvExportPlaceholderProvider;
 use SprykerFeature\Zed\ProductExperienceManagement\Business\Export\Writer\ExportFileWriter;
@@ -152,9 +152,9 @@ class ProductExperienceManagementBusinessFactory extends AbstractBusinessFactory
         );
     }
 
-    public function createExportManager(): ExportManagerInterface
+    public function createExporter(): ExporterInterface
     {
-        return new ExportManager(
+        return new Exporter(
             $this->getRepository(),
             $this->createExportColumnResolver(),
             $this->createExportPlaceholderProvider(),

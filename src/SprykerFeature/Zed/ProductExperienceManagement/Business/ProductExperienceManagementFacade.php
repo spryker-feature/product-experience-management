@@ -86,7 +86,7 @@ class ProductExperienceManagementFacade extends AbstractFacade implements Produc
      */
     public function exportData(ImportJobCriteriaTransfer $criteriaTransfer): ImportJobExportResultTransfer
     {
-        return $this->getFactory()->createExportManager()->exportData($criteriaTransfer);
+        return $this->getFactory()->createExporter()->exportData($criteriaTransfer);
     }
 
     /**
