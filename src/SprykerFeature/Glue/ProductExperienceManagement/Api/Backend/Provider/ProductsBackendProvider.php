@@ -66,7 +66,7 @@ class ProductsBackendProvider extends AbstractBackendProvider
     protected function provideCollection(): array
     {
         $productConcreteCriteriaTransfer = (new ProductConcreteCriteriaTransfer())
-            ->setPagination($this->buildPaginationTransfer())
+            ->setPagination($this->buildPageBasedPaginationTransfer())
             ->setProductConcreteConditions($this->buildConditionsFromRequest());
 
         $productConcreteCollectionTransfer = $this->productFacade->getProductConcreteCollection($productConcreteCriteriaTransfer);
@@ -82,7 +82,7 @@ class ProductsBackendProvider extends AbstractBackendProvider
         );
     }
 
-    protected function buildPaginationTransfer(): PaginationTransfer
+    protected function buildPageBasedPaginationTransfer(): PaginationTransfer
     {
         $paginationTransfer = $this->getPagination();
 
