@@ -152,4 +152,16 @@ class ProductExperienceManagementConfig extends AbstractSharedConfig
             static::VISIBILITY_TYPE_PDP,
         ];
     }
+
+    /**
+     * Specification:
+     * - Returns the sprintf pattern used to generate an abstract product SKU from a concrete product SKU.
+     * - The `%s` placeholder is replaced with the concrete SKU.
+     *
+     * @api
+     */
+    public function getAbstractSkuPattern(): string
+    {
+        return '%s-abstract';
+    }
 }

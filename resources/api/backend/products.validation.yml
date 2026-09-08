@@ -1,0 +1,259 @@
+post:
+    sku:
+        - NotBlank
+        - Length:
+              max: 255
+    abstractSku:
+        - Length:
+              max: 255
+    isActive:
+        - Type:
+              type: bool
+    validFrom:
+        - DateTime: { format: 'Y-m-d H:i:s' }
+    validTo:
+        - DateTime: { format: 'Y-m-d H:i:s' }
+    newFrom:
+        - DateTime: { format: 'Y-m-d H:i:s' }
+    newTo:
+        - DateTime: { format: 'Y-m-d H:i:s' }
+    taxSet:
+        - Collection:
+              allowExtraFields: true
+              allowMissingFields: true
+              fields:
+                  uuid: [NotBlank, Uuid]
+    attributes:
+        - Type:
+              type: array
+    stores:
+        - All:
+              constraints:
+                  - NotBlank
+                  - Type: { type: string }
+    categories:
+        - All:
+              constraints:
+                  - Collection:
+                        allowExtraFields: true
+                        allowMissingFields: true
+                        fields:
+                            uuid: [NotBlank, Uuid]
+    productClass:
+        - All:
+              constraints:
+                  - Collection:
+                        allowExtraFields: true
+                        allowMissingFields: true
+                        fields:
+                            key: [NotBlank]
+    shipmentType:
+        - All:
+              constraints:
+                  - Collection:
+                        allowExtraFields: true
+                        allowMissingFields: true
+                        fields:
+                            uuid: [NotBlank, Uuid]
+    prices:
+        - All:
+              constraints:
+                  - Collection:
+                        allowExtraFields: true
+                        allowMissingFields: true
+                        fields:
+                            priceTypeName: [NotBlank]
+                            storeName: [NotBlank]
+                            currencyCode: [NotBlank, Currency]
+                            netAmount:
+                                - Type: { type: integer }
+                                - GreaterThanOrEqual: { value: 0 }
+                            grossAmount:
+                                - Type: { type: integer }
+                                - GreaterThanOrEqual: { value: 0 }
+    stocks:
+        - All:
+              constraints:
+                  - Collection:
+                        allowExtraFields: true
+                        allowMissingFields: true
+                        fields:
+                            stockName: [NotBlank]
+                            quantity:
+                                - NotBlank
+                                - Type: { type: numeric }
+                                - GreaterThanOrEqual: { value: 0 }
+                            isNeverOutOfStock:
+                                - Type: { type: bool }
+    imageSets:
+        - All:
+              constraints:
+                  - Collection:
+                        allowExtraFields: true
+                        allowMissingFields: true
+                        fields:
+                            # No NotBlank: an omitted uuid is how a new image set is added.
+                            uuid: [Uuid]
+                            localeName: [NotBlank]
+                            images:
+                                - All:
+                                      constraints:
+                                          - Collection:
+                                                allowExtraFields: true
+                                                allowMissingFields: true
+                                                fields:
+                                                    externalUrlSmall: [Url]
+                                                    externalUrlLarge: [Url]
+                                                    sortOrder:
+                                                        - Type: { type: integer }
+    productBundle:
+        - All:
+              constraints:
+                  - Collection:
+                        allowExtraFields: true
+                        allowMissingFields: true
+                        fields:
+                            sku: [NotBlank]
+                            quantity:
+                                - NotBlank
+                                - Type: { type: integer }
+                                - GreaterThan: { value: 0 }
+    localizedAttributes:
+        - All:
+              constraints:
+                  - Collection:
+                        allowExtraFields: true
+                        allowMissingFields: true
+                        fields:
+                            localeName: [NotBlank]
+                            name: [NotBlank]
+                            isSearchable:
+                                - Type: { type: bool }
+
+patch:
+    abstractSku:
+        - Length:
+              max: 255
+    isActive:
+        - Type:
+              type: bool
+    validFrom:
+        - DateTime: { format: 'Y-m-d H:i:s' }
+    validTo:
+        - DateTime: { format: 'Y-m-d H:i:s' }
+    newFrom:
+        - DateTime: { format: 'Y-m-d H:i:s' }
+    newTo:
+        - DateTime: { format: 'Y-m-d H:i:s' }
+    taxSet:
+        - Collection:
+              allowExtraFields: true
+              allowMissingFields: true
+              fields:
+                  uuid: [NotBlank, Uuid]
+    attributes:
+        - Type:
+              type: array
+    stores:
+        - All:
+              constraints:
+                  - NotBlank
+                  - Type: { type: string }
+    categories:
+        - All:
+              constraints:
+                  - Collection:
+                        allowExtraFields: true
+                        allowMissingFields: true
+                        fields:
+                            uuid: [NotBlank, Uuid]
+    productClass:
+        - All:
+              constraints:
+                  - Collection:
+                        allowExtraFields: true
+                        allowMissingFields: true
+                        fields:
+                            key: [NotBlank]
+    shipmentType:
+        - All:
+              constraints:
+                  - Collection:
+                        allowExtraFields: true
+                        allowMissingFields: true
+                        fields:
+                            uuid: [NotBlank, Uuid]
+    prices:
+        - All:
+              constraints:
+                  - Collection:
+                        allowExtraFields: true
+                        allowMissingFields: true
+                        fields:
+                            priceTypeName: [NotBlank]
+                            storeName: [NotBlank]
+                            currencyCode: [NotBlank, Currency]
+                            netAmount:
+                                - Type: { type: integer }
+                                - GreaterThanOrEqual: { value: 0 }
+                            grossAmount:
+                                - Type: { type: integer }
+                                - GreaterThanOrEqual: { value: 0 }
+    stocks:
+        - All:
+              constraints:
+                  - Collection:
+                        allowExtraFields: true
+                        allowMissingFields: true
+                        fields:
+                            stockName: [NotBlank]
+                            quantity:
+                                - NotBlank
+                                - Type: { type: numeric }
+                                - GreaterThanOrEqual: { value: 0 }
+                            isNeverOutOfStock:
+                                - Type: { type: bool }
+    imageSets:
+        - All:
+              constraints:
+                  - Collection:
+                        allowExtraFields: true
+                        allowMissingFields: true
+                        fields:
+                            # No NotBlank: an omitted uuid is how a new image set is added.
+                            uuid: [Uuid]
+                            localeName: [NotBlank]
+                            images:
+                                - All:
+                                      constraints:
+                                          - Collection:
+                                                allowExtraFields: true
+                                                allowMissingFields: true
+                                                fields:
+                                                    externalUrlSmall: [Url]
+                                                    externalUrlLarge: [Url]
+                                                    sortOrder:
+                                                        - Type: { type: integer }
+    productBundle:
+        - All:
+              constraints:
+                  - Collection:
+                        allowExtraFields: true
+                        allowMissingFields: true
+                        fields:
+                            sku: [NotBlank]
+                            quantity:
+                                - NotBlank
+                                - Type: { type: integer }
+                                - GreaterThan: { value: 0 }
+    localizedAttributes:
+        - All:
+              constraints:
+                  - Collection:
+                        allowExtraFields: true
+                        allowMissingFields: true
+                        fields:
+                            localeName: [NotBlank]
+                            name: [NotBlank]
+                            isSearchable:
+                                - Type: { type: bool }

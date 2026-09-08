@@ -1,0 +1,435 @@
+resource:
+    name: products
+    shortName: products
+    description: 'Concrete product (variant) resource for backend API'
+
+    provider: "SprykerFeature\\Glue\\ProductExperienceManagement\\Api\\Backend\\Provider\\ProductsBackendProvider"
+    processor: "SprykerFeature\\Glue\\ProductExperienceManagement\\Api\\Backend\\Processor\\ProductsBackendProcessor"
+
+    paginationEnabled: true
+    paginationItemsPerPage: 10
+
+    security: "is_granted('ROLE_USER')"
+
+    operations:
+        - type: Get
+        - type: GetCollection
+          description: 'List concrete products. Supports filtering by concrete SKU, several concrete SKUs, or parent abstract SKU.'
+          openapiContext:
+              parameters:
+                  - name: 'filter[products.sku]'
+                    in: query
+                    required: false
+                    description: 'Return only the concrete product with this SKU.'
+                    schema:
+                        type: string
+                    example: '093_56994599'
+                  - name: 'filter[products.skus][]'
+                    in: query
+                    required: false
+                    description: 'Return only the concrete products with these SKUs. Repeat the parameter per SKU.'
+                    schema:
+                        type: array
+                        items:
+                            type: string
+                  - name: 'filter[products.abstractSku]'
+                    in: query
+                    required: false
+                    description: 'Return only the variants of this parent abstract product. An unknown SKU matches nothing and returns an empty collection.'
+                    schema:
+                        type: string
+                    example: '093'
+        - type: Post
+          deserialize: true
+        - type: Patch
+          deserialize: true
+          extraProperties:
+              read: false
+
+    properties:
+        sku:
+            type: string
+            identifier: true
+            required: true
+            description: 'Unique SKU of this concrete product variant (identifier).'
+            openapiContext:
+                example: '093_56994599'
+        abstractSku:
+            type: string
+            description: 'SKU of the parent abstract product. Optional: if omitted on POST, a new abstract product is auto-created with a generated SKU. Reparenting is not supported on PATCH — the existing parent is kept.'
+            openapiContext:
+                example: '093'
+        isActive:
+            type: boolean
+            description: 'Activation flag for this concrete variant (concrete-level).'
+            openapiContext:
+                example: true
+        validFrom:
+            type: string
+            description: 'ISO 8601 datetime from which this concrete variant is valid (concrete-level).'
+            openapiContext:
+                example: '2020-01-01 00:00:00'
+        validTo:
+            type: string
+            description: 'ISO 8601 datetime until which this concrete variant is valid (concrete-level).'
+            openapiContext:
+                example: '2025-12-31 00:00:00'
+        attributes:
+            type: array
+            description: 'Non-localized attribute key/value map for this concrete variant (concrete-level). On POST, when the parent abstract is auto-created, these are also copied onto the new abstract.'
+            openapiContext:
+                example:
+                    color: 'Black'
+                    storage_capacity: '32 GB'
+        superAttributeValues:
+            type: array
+            writable: false
+            description: "Read-only, derived server-side. Values of this variant's super attributes — the subset of `attributes` whose keys are super-attribute keys of the parent abstract. You assign them through `attributes`; any key that is a super attribute automatically surfaces here. Ignored on write."
+            openapiContext:
+                example:
+                    storage_capacity: '32 GB'
+        localizedAttributes:
+            type: array
+            description: 'Localized attributes for this concrete variant (concrete-level), one entry per locale. On POST, when the parent abstract is auto-created, these are also copied onto the new abstract.'
+            items:
+                type: object
+                properties:
+                    localeName:
+                        type: string
+                        required: true
+                        description: 'Locale this entry applies to (e.g. en_US).'
+                        openapiContext:
+                            example: 'en_US'
+                    name:
+                        type: string
+                        required: true
+                        description: 'Localized product name.'
+                        openapiContext:
+                            example: 'Sony Xperia Z5'
+                    description:
+                        type: string
+                        description: 'Localized product description.'
+                        openapiContext:
+                            example: 'Compact flagship smartphone.'
+                    isSearchable:
+                        type: boolean
+                        description: 'Whether this variant is searchable in this locale.'
+                        openapiContext:
+                            example: true
+            openapiContext:
+                example:
+                    - localeName: 'en_US'
+                      name: 'Sony Xperia Z5'
+                      description: 'Compact flagship smartphone.'
+                      isSearchable: true
+        prices:
+            type: array
+            description: 'Prices for this concrete variant (concrete-level). On POST, when the parent abstract is auto-created, these prices are also cloned onto the new abstract.'
+            items:
+                type: object
+                properties:
+                    uuid:
+                        type: string
+                        writable: false
+                        description: 'Read-only. UUID of the stored price row. Prices are addressed on write by priceTypeName + currencyCode + storeName, not by this UUID.'
+                        openapiContext:
+                            example: '7f3b1c92-5d64-4a0e-8b21-2f9c7d5e1a30'
+                    priceTypeName:
+                        type: string
+                        description: 'Price type (e.g. DEFAULT, ORIGINAL).'
+                        openapiContext:
+                            example: 'DEFAULT'
+                    currencyCode:
+                        type: string
+                        description: 'ISO 4217 currency code.'
+                        openapiContext:
+                            example: 'EUR'
+                    storeName:
+                        type: string
+                        description: 'Store this price applies to.'
+                        openapiContext:
+                            example: 'DE'
+                    grossAmount:
+                        type: integer
+                        description: 'Gross amount in minor units (cents).'
+                        openapiContext:
+                            example: 12000
+                    netAmount:
+                        type: integer
+                        description: 'Net amount in minor units (cents).'
+                        openapiContext:
+                            example: 10800
+                    # Dynamic-shape list; element type unknown from example. Left untyped for now.
+                    # `nullable` is load-bearing: it makes the generated object type the property
+                    # `?array` with a null default, which is what distinguishes an omitted property
+                    # from an explicit empty array on PATCH.
+                    volumePrices:
+                        type: array
+                        nullable: true
+                        description: 'Volume (quantity-tiered) prices. Element shape not yet typed. On PATCH: omit the property to keep the stored volume prices, send an empty array to clear them, send a list to replace them.'
+                        openapiContext:
+                            example: []
+            openapiContext:
+                example:
+                    - uuid: '7f3b1c92-5d64-4a0e-8b21-2f9c7d5e1a30'
+                      priceTypeName: 'DEFAULT'
+                      currencyCode: 'EUR'
+                      storeName: 'DE'
+                      grossAmount: 12000
+                      netAmount: 10800
+                      volumePrices: []
+        imageSets:
+            type: array
+            description: 'Image sets for this concrete variant (concrete-level). On POST, when the parent abstract is auto-created, these are also cloned onto the new abstract.'
+            items:
+                type: object
+                objectName: ProductImageSet
+                properties:
+                    uuid:
+                        type: string
+                        description: 'UUID of an image set already owned by this product. Send it on PATCH to update that set in place; omit it to add a new set. An unknown UUID is rejected — it is never silently ignored.'
+                        openapiContext:
+                            example: '4b8f2d61-9c07-4e3a-b5d8-1a6e0f7c2b94'
+                    name:
+                        type: string
+                        description: 'Name of the image set. On PATCH by UUID the stored name is kept when this property is omitted.'
+                        openapiContext:
+                            example: 'default'
+                    localeName:
+                        type: string
+                        description: 'Locale of this image set (e.g. de_DE). Omit for a locale-agnostic set.'
+                        openapiContext:
+                            example: 'de_DE'
+                    images:
+                        type: array
+                        description: 'Ordered images belonging to this set.'
+                        items:
+                            type: object
+                            objectName: ProductImage
+                            properties:
+                                externalUrlSmall:
+                                    type: string
+                                    description: 'URL of the small-format image.'
+                                    openapiContext:
+                                        example: 'https://example.com/images/small/xperia.jpg'
+                                externalUrlLarge:
+                                    type: string
+                                    description: 'URL of the large-format image.'
+                                    openapiContext:
+                                        example: 'https://example.com/images/large/xperia.jpg'
+                                altTextSmall:
+                                    type: string
+                                    description: 'Alternative text of the small-format image.'
+                                    openapiContext:
+                                        example: 'Sony Xperia Z5, front view'
+                                altTextLarge:
+                                    type: string
+                                    description: 'Alternative text of the large-format image.'
+                                    openapiContext:
+                                        example: 'Sony Xperia Z5, front view, high resolution'
+                                sortOrder:
+                                    type: integer
+                                    description: 'Position of this image within the set (ascending).'
+                                    openapiContext:
+                                        example: 0
+            openapiContext:
+                example:
+                    - uuid: '4b8f2d61-9c07-4e3a-b5d8-1a6e0f7c2b94'
+                      name: 'default'
+                      localeName: 'de_DE'
+                      images:
+                          - externalUrlSmall: 'https://example.com/images/small/xperia.jpg'
+                            externalUrlLarge: 'https://example.com/images/large/xperia.jpg'
+                            altTextSmall: 'Sony Xperia Z5, front view'
+                            altTextLarge: 'Sony Xperia Z5, front view, high resolution'
+                            sortOrder: 0
+        stocks:
+            type: array
+            description: 'Stock quantities per warehouse for this concrete variant (concrete-level): stockName, quantity, isNeverOutOfStock.'
+            items:
+                type: object
+                properties:
+                    uuid:
+                        type: string
+                        writable: false
+                        description: 'Read-only. UUID of the warehouse this stock row belongs to. Stocks are addressed on write by stockName.'
+                        openapiContext:
+                            example: 'c1a4e7b8-3f52-4d69-9e07-8b2d5c1f3a46'
+                    stockName:
+                        type: string
+                        description: 'Warehouse / stock name.'
+                        openapiContext:
+                            example: 'Warehouse 1'
+                    quantity:
+                        type: integer
+                        description: 'Available quantity.'
+                        openapiContext:
+                            example: 10
+                    isNeverOutOfStock:
+                        type: boolean
+                        description: 'When true, quantity is ignored and stock is unlimited.'
+                        openapiContext:
+                            example: false
+            openapiContext:
+                example:
+                    - uuid: 'c1a4e7b8-3f52-4d69-9e07-8b2d5c1f3a46'
+                      stockName: 'Warehouse 1'
+                      quantity: 10
+                      isNeverOutOfStock: false
+        productBundle:
+            type: array
+            description: 'Bundled product assignments for this concrete variant (concrete-level). Empty array when this product is not a bundle.'
+            items:
+                type: object
+                properties:
+                    sku:
+                        type: string
+                        description: 'SKU of the bundled concrete product.'
+                        openapiContext:
+                            example: '209_123'
+                    quantity:
+                        type: integer
+                        description: 'Number of units of the bundled product.'
+                        openapiContext:
+                            example: 2
+            openapiContext:
+                example:
+                    - sku: '209_123'
+                      quantity: 2
+        productClass:
+            type: array
+            description: 'Product-class (key) assignments for this concrete variant (concrete-level).'
+            items:
+                type: object
+                properties:
+                    key:
+                        type: string
+                        description: 'Key of the assigned product class.'
+                        openapiContext:
+                            example: 'service'
+                    name:
+                        type: string
+                        writable: false
+                        description: 'Read-only. Display name of the assigned product class.'
+                        openapiContext:
+                            example: 'Service'
+            openapiContext:
+                example:
+                    - key: 'service'
+                      name: 'Service'
+        shipmentType:
+            type: array
+            description: 'Shipment-type (UUID) assignments for this concrete variant (concrete-level).'
+            items:
+                type: object
+                properties:
+                    uuid:
+                        type: string
+                        description: 'UUID of the assigned shipment type.'
+                        openapiContext:
+                            example: '9e1bd563-3106-52d1-9717-18e8d491e3b3'
+                    name:
+                        type: string
+                        writable: false
+                        description: 'Read-only. Display name of the assigned shipment type.'
+                        openapiContext:
+                            example: 'Delivery'
+            openapiContext:
+                example:
+                    - uuid: '9e1bd563-3106-52d1-9717-18e8d491e3b3'
+                      name: 'Delivery'
+        stores:
+            type: array
+            description: 'Store-name assignments on the PARENT abstract product (shared by all variants). Returned on read. PATCH is additive — listed stores are added; existing stores are never removed via this endpoint.'
+            items:
+                type: string
+            openapiContext:
+                example:
+                    - 'DE'
+                    - 'AT'
+        taxSet:
+            type: object
+            objectName: ProductTaxSet
+            nullable: true
+            description: 'Tax set assigned to the PARENT abstract product (shared by all variants). Written by UUID; read back with its display name. Null when the parent abstract has no tax set.'
+            properties:
+                uuid:
+                    type: string
+                    description: 'UUID of the tax set assigned to the PARENT abstract product (shared by all variants). Writing it here updates the parent abstract.'
+                    openapiContext:
+                        example: '2c4e3f10-1111-4a2b-9c3d-abcdef012345'
+                name:
+                    type: string
+                    writable: false
+                    description: 'Read-only. Display name of the assigned tax set.'
+                    openapiContext:
+                        example: 'Standard'
+            openapiContext:
+                example:
+                    uuid: '2c4e3f10-1111-4a2b-9c3d-abcdef012345'
+                    name: 'Standard'
+        categories:
+            type: array
+            description: 'Category assignments on the PARENT abstract product (shared by all variants). Written by UUID; read back with the category key, active flag and localized attributes. PATCH is additive — listed categories are added; existing categories are never removed via this endpoint.'
+            items:
+                type: object
+                properties:
+                    uuid:
+                        type: string
+                        description: 'UUID of the assigned category.'
+                        openapiContext:
+                            example: 'cfe982b2-a558-5684-97d3-96f5ecf710c8'
+                    categoryKey:
+                        type: string
+                        writable: false
+                        description: 'Read-only. Machine key of the category.'
+                        openapiContext:
+                            example: 'digital-cameras'
+                    isActive:
+                        type: boolean
+                        writable: false
+                        description: 'Read-only. Whether the category is active.'
+                        openapiContext:
+                            example: true
+                    localizedAttributes:
+                        type: array
+                        writable: false
+                        description: 'Read-only. Localized attributes of the category, one entry per locale.'
+                        items:
+                            type: object
+                            properties:
+                                localeName:
+                                    type: string
+                                    description: 'Locale this entry applies to (e.g. de_DE).'
+                                    openapiContext:
+                                        example: 'de_DE'
+                                name:
+                                    type: string
+                                    description: 'Localized category name.'
+                                    openapiContext:
+                                        example: 'Digitale Kameras'
+                                url:
+                                    type: string
+                                    nullable: true
+                                    description: 'Localized category URL. Null when not set.'
+                                    openapiContext:
+                                        example: null
+            openapiContext:
+                example:
+                    - uuid: 'cfe982b2-a558-5684-97d3-96f5ecf710c8'
+                      categoryKey: 'digital-cameras'
+                      isActive: true
+                      localizedAttributes:
+                          - localeName: 'de_DE'
+                            name: 'Digitale Kameras'
+                            url: null
+        newFrom:
+            type: string
+            description: 'ISO 8601 datetime from which the PARENT abstract product is considered new (abstract-level, shared by all variants). Returned on read.'
+            openapiContext:
+                example: '2020-01-01 00:00:00'
+        newTo:
+            type: string
+            description: 'ISO 8601 datetime until which the PARENT abstract product is considered new (abstract-level, shared by all variants). Returned on read.'
+            openapiContext:
+                example: '2020-03-01 00:00:00'

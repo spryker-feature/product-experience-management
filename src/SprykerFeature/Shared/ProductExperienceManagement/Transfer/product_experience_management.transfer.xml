@@ -280,4 +280,98 @@
         <property name="idLocale" type="int"/>
     </transfer>
 
+    <transfer name="Category">
+        <property name="uuid" type="string" strict="true"/>
+    </transfer>
+
+    <transfer name="MoneyValue">
+        <property name="uuid" type="string" strict="true"/>
+    </transfer>
+
+
+    <transfer name="ProductImageSet">
+        <property name="uuid" type="string" strict="true"/>
+    </transfer>
+
+    <transfer name="StockProduct">
+        <property name="stockUuid" type="string" strict="true"/>
+    </transfer>
+
+    <transfer name="PriceProduct">
+    </transfer>
+
+    <transfer name="ProductBundle">
+        <property name="bundledProducts" type="ProductForBundle[]" singular="bundledProduct"/>
+    </transfer>
+
+    <transfer name="ProductConcrete">
+        <property name="validFrom" type="string"/>
+        <property name="validTo" type="string"/>
+        <property name="productBundle" type="ProductBundle"/>
+        <property name="productClasses" type="ProductClass[]" singular="productClass" strict="true"/>
+        <property name="shipmentTypes" type="ShipmentType[]" singular="shipmentType" strict="true"/>
+    </transfer>
+
+    <transfer name="StoreRelation">
+    </transfer>
+
+    <transfer name="Currency">
+    </transfer>
+
+    <transfer name="ProductClass" strict="true">
+        <property name="key" type="string"/>
+        <property name="name" type="string"/>
+    </transfer>
+
+    <transfer name="ProductForBundle">
+        <property name="sku" type="string"/>
+        <property name="quantity" type="int"/>
+    </transfer>
+
+    <transfer name="ProductImage">
+    </transfer>
+
+    <transfer name="ShipmentType" strict="true">
+    </transfer>
+
+    <transfer name="ProductAbstractConditions" strict="true">
+    </transfer>
+
+    <transfer name="ProductAbstractCriteria" strict="true">
+    </transfer>
+
+    <transfer name="ProductAbstractRelations" strict="true">
+        <property name="withTaxSet" type="bool"/>
+    </transfer>
+
+    <transfer name="ProductConcreteCollection">
+    </transfer>
+
+    <transfer name="ProductConcreteConditions" strict="true">
+    </transfer>
+
+    <transfer name="ProductConcreteCriteria" strict="true">
+    </transfer>
+
+    <transfer name="ProductCategory">
+    </transfer>
+
+    <transfer name="TaxSet">
+    </transfer>
+
+    <transfer name="ProductAbstractCollectionRequest" strict="true">
+    </transfer>
+
+    <transfer name="ProductConcreteCollectionRequest" strict="true">
+    </transfer>
+
+    <transfer name="ProductAbstractCollection">
+        <property name="productTaxSets" type="ProductAbstractTaxSetCollection[]" singular="productTaxSet" strict="true"/>
+    </transfer>
+
+    <transfer name="ProductAbstractTaxSetCollection" strict="true">
+        <property name="taxSet" type="TaxSet"/>
+        <property name="productAbstractSku" type="string"/>
+    </transfer>
+
 </transfers>
