@@ -9,7 +9,6 @@ declare(strict_types=1);
 
 namespace SprykerFeature\Glue\ProductExperienceManagement\Api\Backend\Provider;
 
-use Generated\Shared\Transfer\PaginationTransfer;
 use Generated\Shared\Transfer\ProductConcreteConditionsTransfer;
 use Generated\Shared\Transfer\ProductConcreteCriteriaTransfer;
 use Generated\Shared\Transfer\ProductConcreteTransfer;
@@ -65,11 +64,21 @@ class ProductsBackendProvider extends AbstractBackendProvider
      */
     protected function provideCollection(): array
     {
+        $paginationTransfer = $this->buildPaginationTransfer();
         $productConcreteCriteriaTransfer = (new ProductConcreteCriteriaTransfer())
-            ->setPagination($this->buildPageBasedPaginationTransfer())
+            ->setPagination($paginationTransfer)
             ->setProductConcreteConditions($this->buildConditionsFromRequest());
 
         $productConcreteCollectionTransfer = $this->productFacade->getProductConcreteCollection($productConcreteCriteriaTransfer);
+
+        $nbResults = $productConcreteCollectionTransfer->getPagination()?->getNbResults();
+        if ($nbResults !== null) {
+            $this->setCollectionPagination(
+                $paginationTransfer->getOffsetOrFail(),
+                $paginationTransfer->getLimitOrFail(),
+                $nbResults,
+            );
+        }
 
         $abstractSkus = array_map(
             static fn (ProductConcreteTransfer $productConcreteTransfer): ?string => $productConcreteTransfer->getAbstractSku(),
@@ -80,17 +89,6 @@ class ProductsBackendProvider extends AbstractBackendProvider
             $productConcreteCollectionTransfer->getProducts(),
             $this->productAbstractReader->getProductAbstractCollectionBySkus($abstractSkus),
         );
-    }
-
-    protected function buildPageBasedPaginationTransfer(): PaginationTransfer
-    {
-        $paginationTransfer = $this->getPagination();
-
-        $offset = ($paginationTransfer->getPageOrFail() - 1) * $paginationTransfer->getMaxPerPageOrFail();
-
-        return (new PaginationTransfer())
-            ->setOffset($offset)
-            ->setLimit($paginationTransfer->getMaxPerPageOrFail());
     }
 
     protected function buildConditionsFromRequest(): ProductConcreteConditionsTransfer
