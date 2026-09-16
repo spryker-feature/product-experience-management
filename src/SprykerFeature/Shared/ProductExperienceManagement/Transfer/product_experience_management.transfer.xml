@@ -293,6 +293,10 @@
         <property name="uuid" type="string" strict="true"/>
     </transfer>
 
+    <transfer name="Stock">
+        <property name="uuid" type="string" strict="true" description="A Universally Unique Identifier for an entity."/>
+    </transfer>
+
     <transfer name="StockProduct">
         <property name="stockUuid" type="string" strict="true"/>
     </transfer>
