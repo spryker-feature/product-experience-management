@@ -38,12 +38,8 @@ class ProductConcreteMergeMapper extends AbstractProductConcreteResourceMapper i
         $productConcreteTransfer->setIsActive(
             $productsBackendResource->getIsActive() ?? $productConcreteTransfer->getIsActive(),
         );
-        $productConcreteTransfer->setValidFrom(
-            $productsBackendResource->getValidFrom() ?? $productConcreteTransfer->getValidFrom(),
-        );
-        $productConcreteTransfer->setValidTo(
-            $productsBackendResource->getValidTo() ?? $productConcreteTransfer->getValidTo(),
-        );
+        $productConcreteTransfer->setValidFrom($productsBackendResource->getValidFrom());
+        $productConcreteTransfer->setValidTo($productsBackendResource->getValidTo());
 
         $productConcreteTransfer->setAttributes(array_merge(
             $productConcreteTransfer->getAttributes(),

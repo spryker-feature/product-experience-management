@@ -43,8 +43,6 @@ resource:
           deserialize: true
         - type: Patch
           deserialize: true
-          extraProperties:
-              read: false
 
     properties:
         sku:
