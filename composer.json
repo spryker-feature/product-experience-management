@@ -60,7 +60,8 @@
     },
     "autoload": {
         "psr-4": {
-            "SprykerFeature\\": "src/SprykerFeature/"
+            "SprykerFeature\\": "src/SprykerFeature/",
+            "SprykerFeatureTest\\Shared\\ProductExperienceManagement\\Helper\\": "tests/SprykerFeatureTest/Shared/ProductExperienceManagement/Helper/"
         }
     },
     "autoload-dev": {
