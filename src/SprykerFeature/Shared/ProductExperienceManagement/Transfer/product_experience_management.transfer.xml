@@ -278,19 +278,34 @@
 
     <transfer name="Locale">
         <property name="idLocale" type="int"/>
+        <property name="localeName" type="string"/>
     </transfer>
 
     <transfer name="Category">
         <property name="uuid" type="string" strict="true"/>
+        <property name="localizedAttributes" type="CategoryLocalizedAttributes[]" singular="localizedAttributes"/>
+        <property name="categoryKey" type="string"/>
+        <property name="isActive" type="bool"/>
     </transfer>
 
     <transfer name="MoneyValue">
         <property name="uuid" type="string" strict="true"/>
+        <property name="grossAmount" type="int"/>
+        <property name="netAmount" type="int"/>
+        <property name="currency" type="Currency"/>
+        <property name="store" type="Store"/>
+        <property name="priceData" type="string"/>
+        <property name="idEntity" type="int"/>
     </transfer>
 
 
     <transfer name="ProductImageSet">
         <property name="uuid" type="string" strict="true"/>
+        <property name="name" type="string" description="The name of an entity (e.g., user, category, product, role)."/>
+        <property name="idProductImageSet" type="int"/>
+        <property name="locale" type="Locale" description="The locale context for a request or entity, affecting language and regional formats."/>
+        <property name="productImages" type="ProductImage[]" singular="productImage" description="A collection of product images."/>
+        <property name="idProduct" type="int"/>
     </transfer>
 
     <transfer name="Stock">
@@ -299,9 +314,17 @@
 
     <transfer name="StockProduct">
         <property name="stockUuid" type="string" strict="true"/>
+        <property name="sku" type="string"/>
+        <property name="stockType" type="string"/>
+        <property name="quantity" type="decimal"/>
+        <property name="isNeverOutOfStock" type="string"/>
     </transfer>
 
     <transfer name="PriceProduct">
+        <property name="priceType" type="PriceType" description="The type of price (e.g., DEFAULT, PROMOTIONAL)."/>
+        <property name="moneyValue" type="MoneyValue"/>
+        <property name="priceTypeName" type="string"/>
+        <property name="idPriceProduct" type="int"/>
     </transfer>
 
     <transfer name="ProductBundle">
@@ -314,12 +337,25 @@
         <property name="productBundle" type="ProductBundle"/>
         <property name="productClasses" type="ProductClass[]" singular="productClass" strict="true"/>
         <property name="shipmentTypes" type="ShipmentType[]" singular="shipmentType" strict="true"/>
+        <property name="prices" type="PriceProduct[]" singular="price"/>
+        <property name="imageSets" type="ProductImageSet[]" singular="imageSet" description="A collection of image sets for a product."/>
+        <property name="sku" type="string"/>
+        <property name="isActive" type="bool"/>
+        <property name="abstractSku" type="string"/>
+        <property name="attributes" type="array" singular="attribute"/>
+        <property name="localizedAttributes" type="LocalizedAttributes[]" singular="localizedAttributes"/>
+        <property name="stocks" type="StockProduct[]" singular="stock"/>
+        <property name="superAttributeValues" type="array" singular="superAttributeValue" associative="true" strict="true"/>
+        <property name="fkProductAbstract" type="int"/>
     </transfer>
 
     <transfer name="StoreRelation">
+        <property name="stores" type="Store[]" singular="stores"/>
+        <property name="idStores" type="int[]" singular="idStores"/>
     </transfer>
 
     <transfer name="Currency">
+        <property name="code" type="string"/>
     </transfer>
 
     <transfer name="ProductClass" strict="true">
@@ -333,49 +369,88 @@
     </transfer>
 
     <transfer name="ProductImage">
+        <property name="externalUrlSmall" type="string"/>
+        <property name="externalUrlLarge" type="string"/>
+        <property name="altTextSmall" type="string" strict="true"/>
+        <property name="altTextLarge" type="string" strict="true"/>
+        <property name="sortOrder" type="int"/>
     </transfer>
 
     <transfer name="ShipmentType" strict="true">
+        <property name="uuid" type="string"/>
+        <property name="name" type="string"/>
     </transfer>
 
     <transfer name="ProductAbstractConditions" strict="true">
+        <property name="skus" type="string[]" singular="sku" description="A collection of Stock Keeping Units (SKUs)."/>
     </transfer>
 
     <transfer name="ProductAbstractCriteria" strict="true">
+        <property name="productAbstractConditions" type="ProductAbstractConditions" description="Conditions for filtering abstract products."/>
+        <property name="productAbstractRelations" type="ProductAbstractRelations"/>
     </transfer>
 
     <transfer name="ProductAbstractRelations" strict="true">
         <property name="withTaxSet" type="bool"/>
+        <property name="withStoreRelations" type="bool" description="A flag to include store relations in the response."/>
+        <property name="withProductCategories" type="bool"/>
+        <property name="withImageSets" type="bool"/>
     </transfer>
 
     <transfer name="ProductConcreteCollection">
+        <property name="products" type="ProductConcrete[]" singular="product" description="A collection of products."/>
+        <property name="pagination" type="Pagination" strict="true"/>
     </transfer>
 
     <transfer name="ProductConcreteConditions" strict="true">
+        <property name="skus" type="string[]" singular="sku" description="A collection of Stock Keeping Units (SKUs)."/>
+        <property name="productAbstractSkus" type="string[]" singular="productAbstractSku" strict="true"/>
     </transfer>
 
     <transfer name="ProductConcreteCriteria" strict="true">
+        <property name="productConcreteConditions" type="ProductConcreteConditions" description="Conditions for filtering concrete products."/>
+        <property name="pagination" type="Pagination"/>
     </transfer>
 
     <transfer name="ProductCategory">
+        <property name="category" type="Category" description="A product category."/>
     </transfer>
 
     <transfer name="TaxSet">
+        <property name="uuid" type="string"/>
+        <property name="name" type="string"/>
     </transfer>
 
     <transfer name="ProductAbstractCollectionRequest" strict="true">
+        <property name="productAbstracts" type="ProductAbstract[]" singular="productAbstract"/>
     </transfer>
 
     <transfer name="ProductConcreteCollectionRequest" strict="true">
+        <property name="products" type="ProductConcrete[]" singular="product"/>
     </transfer>
 
     <transfer name="ProductAbstractCollection">
         <property name="productTaxSets" type="ProductAbstractTaxSetCollection[]" singular="productTaxSet" strict="true"/>
+        <property name="productAbstracts" type="ProductAbstract[]" singular="productAbstract"/>
     </transfer>
 
     <transfer name="ProductAbstractTaxSetCollection" strict="true">
         <property name="taxSet" type="TaxSet"/>
         <property name="productAbstractSku" type="string"/>
+    </transfer>
+
+    <transfer name="ProductConcreteCollectionResponse" strict="true">
+        <property name="errors" type="Error[]" singular="error"/>
+    </transfer>
+
+    <transfer name="ProductAbstractCollectionResponse" strict="true">
+        <property name="errors" type="Error[]" singular="error"/>
+    </transfer>
+
+    <transfer name="CategoryLocalizedAttributes">
+        <property name="locale" type="Locale"/>
+        <property name="name" type="string"/>
+        <property name="url" type="string"/>
     </transfer>
 
 </transfers>
