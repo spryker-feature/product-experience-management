@@ -18,10 +18,9 @@ use Orm\Zed\Product\Persistence\SpyProductQuery;
 use Spryker\Service\UtilEncoding\UtilEncodingServiceInterface;
 use Spryker\Zed\Product\Dependency\ProductEvents;
 use Spryker\Zed\Propel\Persistence\BatchProcessor\ActiveRecordBatchProcessorTrait;
-use SprykerFeature\Zed\ProductExperienceManagement\Business\Dependency\Plugin\ImportStepInterface;
 use SprykerFeature\Zed\ProductExperienceManagement\ProductExperienceManagementConfig;
 
-class ProductCsvImportConcreteStep extends AbstractProductCsvImportStep implements ImportStepInterface
+class ProductCsvImportConcreteStep extends AbstractProductCsvImportStep
 {
     use ActiveRecordBatchProcessorTrait;
 

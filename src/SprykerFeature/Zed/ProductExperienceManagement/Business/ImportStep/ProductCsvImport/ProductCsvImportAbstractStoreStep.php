@@ -17,15 +17,10 @@ use Orm\Zed\Product\Persistence\SpyProductAbstractStoreQuery;
 use Orm\Zed\Store\Persistence\SpyStore;
 use Orm\Zed\Store\Persistence\SpyStoreQuery;
 use Spryker\Zed\Propel\Persistence\BatchProcessor\ActiveRecordBatchProcessorTrait;
-use SprykerFeature\Zed\ProductExperienceManagement\Business\Dependency\Plugin\ImportStepInterface;
 
-class ProductCsvImportAbstractStoreStep implements ImportStepInterface
+class ProductCsvImportAbstractStoreStep extends AbstractProductCsvImportStep
 {
     use ActiveRecordBatchProcessorTrait;
-
-    protected const string COLUMN_ABSTRACT_SKU = 'abstract_sku';
-
-    protected const string COLUMN_CONCRETE_SKU = 'concrete_sku';
 
     protected const string COLUMN_STORES = 'stores';
 
@@ -101,22 +96,6 @@ class ProductCsvImportAbstractStoreStep implements ImportStepInterface
         }
 
         return $result;
-    }
-
-    /**
-     * @param array<string, string> $row
-     */
-    protected function isConcreteRow(array $row): bool
-    {
-        return trim($row[static::COLUMN_CONCRETE_SKU] ?? '') !== '';
-    }
-
-    /**
-     * @param array<string, string> $row
-     */
-    protected function resolveAbstractSku(array $row): string
-    {
-        return trim($row[static::COLUMN_ABSTRACT_SKU] ?? '');
     }
 
     /**

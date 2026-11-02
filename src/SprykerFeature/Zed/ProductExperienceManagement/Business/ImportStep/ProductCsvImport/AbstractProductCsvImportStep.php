@@ -9,7 +9,15 @@ declare(strict_types=1);
 
 namespace SprykerFeature\Zed\ProductExperienceManagement\Business\ImportStep\ProductCsvImport;
 
-abstract class AbstractProductCsvImportStep
+use Generated\Shared\Transfer\ImportPublishEventTransfer;
+use Generated\Shared\Transfer\ImportStepErrorTransfer;
+use Spryker\Zed\DataExchangeExtension\Dependency\Plugin\ImportStepInterface;
+
+/**
+ * Base class of the product import steps. Implements the engine's step contract and provides the helpers for the two
+ * transfers every step reports: a row error and a publish event.
+ */
+abstract class AbstractProductCsvImportStep implements ImportStepInterface
 {
     protected const string COLUMN_ABSTRACT_SKU = 'abstract_sku';
 
@@ -20,6 +28,20 @@ abstract class AbstractProductCsvImportStep
     protected const string ATTRIBUTE_PAIR_SEPARATOR = ';';
 
     protected const string ATTRIBUTE_KEY_VALUE_SEPARATOR = '=';
+
+    protected function createImportStepError(int $csvRowNumber, string $errorMessage): ImportStepErrorTransfer
+    {
+        return (new ImportStepErrorTransfer())
+            ->setCsvRowNumber($csvRowNumber)
+            ->setErrorMessage($errorMessage);
+    }
+
+    protected function createImportPublishEvent(string $eventName, int $entityId): ImportPublishEventTransfer
+    {
+        return (new ImportPublishEventTransfer())
+            ->setEventName($eventName)
+            ->setEntityId($entityId);
+    }
 
     /**
      * @param array<string, string> $row

@@ -18,13 +18,10 @@ use Orm\Zed\SelfServicePortal\Persistence\SpyProductClassQuery;
 use Orm\Zed\SelfServicePortal\Persistence\SpyProductToProductClassQuery;
 use Spryker\Zed\Product\Dependency\ProductEvents;
 use Spryker\Zed\Propel\Persistence\BatchProcessor\ActiveRecordBatchProcessorTrait;
-use SprykerFeature\Zed\ProductExperienceManagement\Business\Dependency\Plugin\ImportStepInterface;
 
-class ProductCsvImportClassStep implements ImportStepInterface
+class ProductCsvImportClassStep extends AbstractProductCsvImportStep
 {
     use ActiveRecordBatchProcessorTrait;
-
-    protected const string COLUMN_CONCRETE_SKU = 'concrete_sku';
 
     protected const string COLUMN_PRODUCT_CLASSES = 'product_classes';
 
@@ -207,14 +204,6 @@ class ProductCsvImportClassStep implements ImportStepInterface
     protected function resolveProductClasses(array $row): string
     {
         return trim($row[static::COLUMN_PRODUCT_CLASSES] ?? '');
-    }
-
-    /**
-     * @param array<string, string> $row
-     */
-    protected function resolveConcreteSku(array $row): string
-    {
-        return trim($row[static::COLUMN_CONCRETE_SKU] ?? '');
     }
 
     /**

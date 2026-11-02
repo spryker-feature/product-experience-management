@@ -24,19 +24,14 @@ use Orm\Zed\Store\Persistence\SpyStoreQuery;
 use Spryker\Zed\PriceProduct\Dependency\PriceProductEvents;
 use Spryker\Zed\Product\Dependency\ProductEvents;
 use Spryker\Zed\Propel\Persistence\BatchProcessor\ActiveRecordBatchProcessorTrait;
-use SprykerFeature\Zed\ProductExperienceManagement\Business\Dependency\Plugin\ImportStepInterface;
 
 /**
  * Sets price amounts on spy_price_product_store and ensures spy_price_product_default.
  * Runs after ProductCsvImportPriceStep which creates the spy_price_product records.
  */
-class ProductCsvImportPriceStoreStep implements ImportStepInterface
+class ProductCsvImportPriceStoreStep extends AbstractProductCsvImportStep
 {
     use ActiveRecordBatchProcessorTrait;
-
-    protected const string COLUMN_ABSTRACT_SKU = 'abstract_sku';
-
-    protected const string COLUMN_CONCRETE_SKU = 'concrete_sku';
 
     protected const string PRICE_COLUMN_PATTERN = '/^price\.(\w+)\.(\w+)\.(\w+)\.(net|gross)$/';
 
@@ -123,7 +118,7 @@ class ProductCsvImportPriceStoreStep implements ImportStepInterface
     {
         $result = new ImportRowValidationCollectionTransfer();
 
-        if ($this->resolveConcreteSku($row) === null && $this->resolveAbstractSku($row) === null) {
+        if ($this->findConcreteSku($row) === null && $this->findAbstractSku($row) === null) {
             $result->addError((new ImportStepErrorTransfer())
                 ->setCsvRowNumber($rowNumber)
                 ->setErrorMessage(sprintf('The value \'\' in field \'%s\' is not valid because neither Abstract SKU nor Concrete SKU is provided. Expected: at least one SKU. Please update the value.', $propertyNamesInFile[static::COLUMN_ABSTRACT_SKU] ?? static::COLUMN_ABSTRACT_SKU)));
@@ -155,8 +150,8 @@ class ProductCsvImportPriceStoreStep implements ImportStepInterface
      */
     protected function resolvePriceProduct(array $row): ?SpyPriceProduct
     {
-        $concreteSku = $this->resolveConcreteSku($row);
-        $productSku = $concreteSku ?? $this->resolveAbstractSku($row) ?? '';
+        $concreteSku = $this->findConcreteSku($row);
+        $productSku = $concreteSku ?? $this->findAbstractSku($row) ?? '';
 
         if (!array_key_exists($productSku, static::$priceProductCache)) {
             $query = SpyPriceProductQuery::create();
@@ -338,7 +333,7 @@ class ProductCsvImportPriceStoreStep implements ImportStepInterface
     /**
      * @param array<string, string> $row
      */
-    protected function resolveAbstractSku(array $row): ?string
+    protected function findAbstractSku(array $row): ?string
     {
         $sku = trim($row[static::COLUMN_ABSTRACT_SKU] ?? '');
 
@@ -348,7 +343,7 @@ class ProductCsvImportPriceStoreStep implements ImportStepInterface
     /**
      * @param array<string, string> $row
      */
-    protected function resolveConcreteSku(array $row): ?string
+    protected function findConcreteSku(array $row): ?string
     {
         $sku = trim($row[static::COLUMN_CONCRETE_SKU] ?? '');
 

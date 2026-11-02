@@ -9,10 +9,11 @@ declare(strict_types=1);
 
 namespace SprykerFeature\Zed\ProductExperienceManagement\Communication\Plugin;
 
+use Spryker\Zed\DataExchangeExtension\Dependency\Plugin\ColumnPlaceholderProviderInterface;
+use Spryker\Zed\DataExchangeExtension\Dependency\Plugin\ExportDataProviderInterface;
+use Spryker\Zed\DataExchangeExtension\Dependency\Plugin\ExportSchemaPluginInterface;
+use Spryker\Zed\DataExchangeExtension\Dependency\Plugin\ImportSchemaPluginInterface;
 use Spryker\Zed\Kernel\Communication\AbstractPlugin;
-use SprykerFeature\Zed\ProductExperienceManagement\Business\Dependency\Plugin\ExportDataProviderInterface;
-use SprykerFeature\Zed\ProductExperienceManagement\Business\Dependency\Plugin\ExportSchemaPluginInterface;
-use SprykerFeature\Zed\ProductExperienceManagement\Business\Dependency\Plugin\ImportSchemaPluginInterface;
 
 /**
  * {@inheritDoc}
@@ -25,6 +26,11 @@ class ProductCsvImportSchemaPlugin extends AbstractPlugin implements ImportSchem
 {
     protected const string TYPE = 'products-csv-import';
 
+    /**
+     * {@inheritDoc}
+     *
+     * @api
+     */
     public function getType(): string
     {
         return static::TYPE;
@@ -35,7 +41,7 @@ class ProductCsvImportSchemaPlugin extends AbstractPlugin implements ImportSchem
      *
      * @api
      *
-     * @return array<\SprykerFeature\Zed\ProductExperienceManagement\Business\Dependency\Plugin\ImportStepInterface>
+     * @return array<\Spryker\Zed\DataExchangeExtension\Dependency\Plugin\ImportStepInterface>
      */
     public function getImportSteps(): array
     {
@@ -47,7 +53,7 @@ class ProductCsvImportSchemaPlugin extends AbstractPlugin implements ImportSchem
      *
      * @api
      *
-     * @return array<\SprykerFeature\Zed\ProductExperienceManagement\Business\Dependency\Plugin\ExportStepInterface>
+     * @return array<\Spryker\Zed\DataExchangeExtension\Dependency\Plugin\ExportStepInterface>
      */
     public function getExportSteps(): array
     {
@@ -82,8 +88,23 @@ class ProductCsvImportSchemaPlugin extends AbstractPlugin implements ImportSchem
         ];
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @api
+     */
     public function getExportDataProvider(): ExportDataProviderInterface
     {
         return $this->getBusinessFactory()->createProductCsvExportDataProvider();
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @api
+     */
+    public function getPlaceholderProvider(): ColumnPlaceholderProviderInterface
+    {
+        return $this->getBusinessFactory()->createExportPlaceholderProvider();
     }
 }

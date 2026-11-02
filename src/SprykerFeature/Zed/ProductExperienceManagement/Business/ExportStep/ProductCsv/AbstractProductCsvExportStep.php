@@ -9,7 +9,7 @@ declare(strict_types=1);
 
 namespace SprykerFeature\Zed\ProductExperienceManagement\Business\ExportStep\ProductCsv;
 
-use SprykerFeature\Zed\ProductExperienceManagement\Business\Dependency\Plugin\ExportStepInterface;
+use Spryker\Zed\DataExchangeExtension\Dependency\Plugin\ExportStepInterface;
 
 abstract class AbstractProductCsvExportStep implements ExportStepInterface
 {

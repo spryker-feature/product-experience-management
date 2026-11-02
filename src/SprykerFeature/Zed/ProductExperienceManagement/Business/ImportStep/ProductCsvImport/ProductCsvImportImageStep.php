@@ -23,14 +23,13 @@ use Orm\Zed\ProductImage\Persistence\SpyProductImageSetToProductImageQuery;
 use Spryker\Zed\Product\Dependency\ProductEvents;
 use Spryker\Zed\ProductImage\Dependency\ProductImageEvents;
 use Spryker\Zed\Propel\Persistence\BatchProcessor\ActiveRecordBatchProcessorTrait;
-use SprykerFeature\Zed\ProductExperienceManagement\Business\Dependency\Plugin\ImportStepInterface;
 
 /**
  * Processes image columns: "Images {size} ({locale}-{sort_order})" → system "images.{size}.{locale}.{sort_order}".
  * Each column contains a single image URL.
  * Handles both abstract and concrete product images.
  */
-class ProductCsvImportImageStep extends AbstractProductCsvImportStep implements ImportStepInterface
+class ProductCsvImportImageStep extends AbstractProductCsvImportStep
 {
     use ActiveRecordBatchProcessorTrait;
 

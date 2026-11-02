@@ -12,7 +12,7 @@ namespace SprykerFeature\Zed\ProductExperienceManagement\Business\Export\DataPro
 use Orm\Zed\Product\Persistence\Map\SpyProductAbstractTableMap;
 use Orm\Zed\Product\Persistence\SpyProductAbstractQuery;
 use Propel\Runtime\ActiveQuery\Criteria;
-use SprykerFeature\Zed\ProductExperienceManagement\Business\Dependency\Plugin\ExportDataProviderInterface;
+use Spryker\Zed\DataExchangeExtension\Dependency\Plugin\ExportDataProviderInterface;
 
 class ProductCsvExportDataProvider implements ExportDataProviderInterface
 {

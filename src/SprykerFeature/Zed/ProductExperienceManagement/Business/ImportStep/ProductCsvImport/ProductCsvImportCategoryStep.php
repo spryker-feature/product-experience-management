@@ -18,15 +18,10 @@ use Orm\Zed\ProductCategory\Persistence\SpyProductCategoryQuery;
 use Spryker\Zed\Product\Dependency\ProductEvents;
 use Spryker\Zed\ProductCategory\Dependency\ProductCategoryEvents;
 use Spryker\Zed\Propel\Persistence\BatchProcessor\ActiveRecordBatchProcessorTrait;
-use SprykerFeature\Zed\ProductExperienceManagement\Business\Dependency\Plugin\ImportStepInterface;
 
-class ProductCsvImportCategoryStep implements ImportStepInterface
+class ProductCsvImportCategoryStep extends AbstractProductCsvImportStep
 {
     use ActiveRecordBatchProcessorTrait;
-
-    protected const string COLUMN_ABSTRACT_SKU = 'abstract_sku';
-
-    protected const string COLUMN_CONCRETE_SKU = 'concrete_sku';
 
     protected const string COLUMN_CATEGORIES = 'categories';
 
@@ -162,22 +157,6 @@ class ProductCsvImportCategoryStep implements ImportStepInterface
                 (new ImportPublishEventTransfer())->setEventName(ProductCategoryEvents::PRODUCT_CATEGORY_PUBLISH)->setEntityId($idProductAbstract),
             );
         }
-    }
-
-    /**
-     * @param array<string, string> $row
-     */
-    protected function isConcreteRow(array $row): bool
-    {
-        return trim($row[static::COLUMN_CONCRETE_SKU] ?? '') !== '';
-    }
-
-    /**
-     * @param array<string, string> $row
-     */
-    protected function resolveAbstractSku(array $row): string
-    {
-        return trim($row[static::COLUMN_ABSTRACT_SKU] ?? '');
     }
 
     /**

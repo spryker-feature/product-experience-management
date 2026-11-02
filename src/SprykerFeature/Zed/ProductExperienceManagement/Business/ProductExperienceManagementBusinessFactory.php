@@ -9,11 +9,12 @@ declare(strict_types=1);
 
 namespace SprykerFeature\Zed\ProductExperienceManagement\Business;
 
-use Spryker\Service\FileSystem\FileSystemServiceInterface;
 use Spryker\Service\UtilEncoding\UtilEncodingServiceInterface;
 use Spryker\Zed\Category\Business\CategoryFacadeInterface;
 use Spryker\Zed\Currency\Business\CurrencyFacadeInterface;
-use Spryker\Zed\Event\Business\EventFacadeInterface;
+use Spryker\Zed\DataExchangeExtension\Dependency\Plugin\ColumnPlaceholderProviderInterface;
+use Spryker\Zed\DataExchangeExtension\Dependency\Plugin\ExportStepInterface;
+use Spryker\Zed\DataExchangeExtension\Dependency\Plugin\ImportStepInterface;
 use Spryker\Zed\EventBehavior\Business\EventBehaviorFacadeInterface;
 use Spryker\Zed\Kernel\Business\AbstractBusinessFactory;
 use Spryker\Zed\Locale\Business\LocaleFacadeInterface;
@@ -29,19 +30,10 @@ use Spryker\Zed\ShipmentType\Business\ShipmentTypeFacadeInterface;
 use Spryker\Zed\Stock\Business\StockFacadeInterface;
 use Spryker\Zed\Store\Business\StoreFacadeInterface;
 use Spryker\Zed\Tax\Business\TaxFacadeInterface;
-use SprykerFeature\Zed\ProductExperienceManagement\Business\Dependency\Plugin\ExportStepInterface;
-use SprykerFeature\Zed\ProductExperienceManagement\Business\Dependency\Plugin\ImportStepInterface;
 use SprykerFeature\Zed\ProductExperienceManagement\Business\Expander\ProductAttributeVisibilityExpander;
 use SprykerFeature\Zed\ProductExperienceManagement\Business\Expander\ProductAttributeVisibilityExpanderInterface;
-use SprykerFeature\Zed\ProductExperienceManagement\Business\Export\ColumnResolver\ExportColumnResolver;
-use SprykerFeature\Zed\ProductExperienceManagement\Business\Export\ColumnResolver\ExportColumnResolverInterface;
 use SprykerFeature\Zed\ProductExperienceManagement\Business\Export\DataProvider\ProductCsvExportDataProvider;
-use SprykerFeature\Zed\ProductExperienceManagement\Business\Export\Exporter\Exporter;
-use SprykerFeature\Zed\ProductExperienceManagement\Business\Export\Exporter\ExporterInterface;
-use SprykerFeature\Zed\ProductExperienceManagement\Business\Export\PlaceholderProvider\ExportPlaceholderProviderInterface;
 use SprykerFeature\Zed\ProductExperienceManagement\Business\Export\PlaceholderProvider\ProductCsvExportPlaceholderProvider;
-use SprykerFeature\Zed\ProductExperienceManagement\Business\Export\Writer\ExportFileWriter;
-use SprykerFeature\Zed\ProductExperienceManagement\Business\Export\Writer\ExportFileWriterInterface;
 use SprykerFeature\Zed\ProductExperienceManagement\Business\ExportStep\ProductCsv\ProductCsvCategoryExportStep;
 use SprykerFeature\Zed\ProductExperienceManagement\Business\ExportStep\ProductCsv\ProductCsvCoreExportStep;
 use SprykerFeature\Zed\ProductExperienceManagement\Business\ExportStep\ProductCsv\ProductCsvImageExportStep;
@@ -52,18 +44,6 @@ use SprykerFeature\Zed\ProductExperienceManagement\Business\ExportStep\ProductCs
 use SprykerFeature\Zed\ProductExperienceManagement\Business\ExportStep\ProductCsv\ProductCsvStockExportStep;
 use SprykerFeature\Zed\ProductExperienceManagement\Business\ExportStep\ProductCsv\ProductCsvStoreExportStep;
 use SprykerFeature\Zed\ProductExperienceManagement\Business\ExportStep\ProductCsv\ProductCsvUrlExportStep;
-use SprykerFeature\Zed\ProductExperienceManagement\Business\ImportJob\Writer\ImportJobWriter;
-use SprykerFeature\Zed\ProductExperienceManagement\Business\ImportJob\Writer\ImportJobWriterInterface;
-use SprykerFeature\Zed\ProductExperienceManagement\Business\ImportJobRun\Importer\ImportJobRunImporter;
-use SprykerFeature\Zed\ProductExperienceManagement\Business\ImportJobRun\Importer\ImportJobRunImporterInterface;
-use SprykerFeature\Zed\ProductExperienceManagement\Business\ImportJobRun\Manager\ImportJobRunManager;
-use SprykerFeature\Zed\ProductExperienceManagement\Business\ImportJobRun\Manager\ImportJobRunManagerInterface;
-use SprykerFeature\Zed\ProductExperienceManagement\Business\ImportJobRun\Mapper\CsvHeaderMapper;
-use SprykerFeature\Zed\ProductExperienceManagement\Business\ImportJobRun\Mapper\CsvHeaderMapperInterface;
-use SprykerFeature\Zed\ProductExperienceManagement\Business\ImportJobRun\Writer\ImportFileWriter;
-use SprykerFeature\Zed\ProductExperienceManagement\Business\ImportJobRun\Writer\ImportFileWriterInterface;
-use SprykerFeature\Zed\ProductExperienceManagement\Business\ImportJobRun\Writer\ImportJobRunWriter;
-use SprykerFeature\Zed\ProductExperienceManagement\Business\ImportJobRun\Writer\ImportJobRunWriterInterface;
 use SprykerFeature\Zed\ProductExperienceManagement\Business\ImportStep\ProductCsvImport\ProductCsvImportAbstractLocalizedAttributesStep;
 use SprykerFeature\Zed\ProductExperienceManagement\Business\ImportStep\ProductCsvImport\ProductCsvImportAbstractStep;
 use SprykerFeature\Zed\ProductExperienceManagement\Business\ImportStep\ProductCsvImport\ProductCsvImportAbstractStoreStep;
@@ -90,59 +70,7 @@ use SprykerFeature\Zed\ProductExperienceManagement\ProductExperienceManagementDe
  */
 class ProductExperienceManagementBusinessFactory extends AbstractBusinessFactory
 {
-    public function createImportJobRunManager(): ImportJobRunManagerInterface
-    {
-        return new ImportJobRunManager(
-            $this->getRepository(),
-            $this->getEntityManager(),
-            $this->createImportJobRunImporter(),
-            $this->getConfig(),
-            $this->getImportPreProcessorPlugins(),
-            $this->getImportPostProcessorPlugins(),
-        );
-    }
-
-    public function createImportJobRunImporter(): ImportJobRunImporterInterface
-    {
-        return new ImportJobRunImporter(
-            $this->getRepository(),
-            $this->getEntityManager(),
-            $this->getFileSystemService(),
-            $this->getEventFacade(),
-            $this->getConfig(),
-            $this->createCsvHeaderMapper(),
-            $this->getImportSchemaPlugins(),
-        );
-    }
-
-    public function createCsvHeaderMapper(): CsvHeaderMapperInterface
-    {
-        return new CsvHeaderMapper();
-    }
-
-    public function createImportJobRunWriter(): ImportJobRunWriterInterface
-    {
-        return new ImportJobRunWriter(
-            $this->createImportFileWriter(),
-            $this->getEntityManager(),
-            $this->getRepository(),
-        );
-    }
-
-    public function createImportFileWriter(): ImportFileWriterInterface
-    {
-        return new ImportFileWriter(
-            $this->getFileSystemService(),
-            $this->getConfig(),
-        );
-    }
-
-    public function createExportColumnResolver(): ExportColumnResolverInterface
-    {
-        return new ExportColumnResolver();
-    }
-
-    public function createExportPlaceholderProvider(): ExportPlaceholderProviderInterface
+    public function createExportPlaceholderProvider(): ColumnPlaceholderProviderInterface
     {
         return new ProductCsvExportPlaceholderProvider(
             $this->getStoreFacade(),
@@ -152,33 +80,13 @@ class ProductExperienceManagementBusinessFactory extends AbstractBusinessFactory
         );
     }
 
-    public function createExporter(): ExporterInterface
-    {
-        return new Exporter(
-            $this->getRepository(),
-            $this->createExportColumnResolver(),
-            $this->createExportPlaceholderProvider(),
-            $this->getImportSchemaPlugins(),
-            $this->getConfig(),
-            $this->createExportFileWriter(),
-        );
-    }
-
-    public function createExportFileWriter(): ExportFileWriterInterface
-    {
-        return new ExportFileWriter(
-            $this->getFileSystemService(),
-            $this->getConfig(),
-        );
-    }
-
     public function createProductCsvExportDataProvider(): ProductCsvExportDataProvider
     {
         return new ProductCsvExportDataProvider();
     }
 
     /**
-     * @return array<\SprykerFeature\Zed\ProductExperienceManagement\Business\Dependency\Plugin\ExportStepInterface>
+     * @return array<\Spryker\Zed\DataExchangeExtension\Dependency\Plugin\ExportStepInterface>
      */
     public function createProductCsvExportSteps(): array
     {
@@ -246,16 +154,8 @@ class ProductExperienceManagementBusinessFactory extends AbstractBusinessFactory
         return new ProductCsvImageExportStep();
     }
 
-    public function createImportJobWriter(): ImportJobWriterInterface
-    {
-        return new ImportJobWriter(
-            $this->getEntityManager(),
-            $this->getImportSchemaPlugins(),
-        );
-    }
-
     /**
-     * @return array<\SprykerFeature\Zed\ProductExperienceManagement\Business\Dependency\Plugin\ImportStepInterface>
+     * @return array<\Spryker\Zed\DataExchangeExtension\Dependency\Plugin\ImportStepInterface>
      */
     public function createProductCsvImportSteps(): array
     {
@@ -360,40 +260,6 @@ class ProductExperienceManagementBusinessFactory extends AbstractBusinessFactory
             $this->getEventBehaviorFacade(),
             $this->getEntityManager(),
         );
-    }
-
-    /**
-     * @return array<\SprykerFeature\Zed\ProductExperienceManagement\Business\Dependency\Plugin\ImportSchemaPluginInterface>
-     */
-    public function getImportSchemaPlugins(): array
-    {
-        return $this->getProvidedDependency(ProductExperienceManagementDependencyProvider::PLUGINS_IMPORT_SCHEMA);
-    }
-
-    /**
-     * @return array<\SprykerFeature\Zed\ProductExperienceManagement\Business\Dependency\Plugin\ImportPreProcessorPluginInterface>
-     */
-    public function getImportPreProcessorPlugins(): array
-    {
-        return $this->getProvidedDependency(ProductExperienceManagementDependencyProvider::PLUGINS_IMPORT_PRE_PROCESSOR);
-    }
-
-    /**
-     * @return array<\SprykerFeature\Zed\ProductExperienceManagement\Business\Dependency\Plugin\ImportPostProcessorPluginInterface>
-     */
-    public function getImportPostProcessorPlugins(): array
-    {
-        return $this->getProvidedDependency(ProductExperienceManagementDependencyProvider::PLUGINS_IMPORT_POST_PROCESSOR);
-    }
-
-    public function getFileSystemService(): FileSystemServiceInterface
-    {
-        return $this->getProvidedDependency(ProductExperienceManagementDependencyProvider::SERVICE_FILE_SYSTEM);
-    }
-
-    public function getEventFacade(): EventFacadeInterface
-    {
-        return $this->getProvidedDependency(ProductExperienceManagementDependencyProvider::FACADE_EVENT);
     }
 
     public function getProductFacade(): ProductFacadeInterface

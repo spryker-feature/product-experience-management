@@ -9,15 +9,9 @@ declare(strict_types=1);
 
 namespace SprykerFeature\Zed\ProductExperienceManagement\Persistence;
 
-use Orm\Zed\ProductExperienceManagement\Persistence\SpyImportJobQuery;
-use Orm\Zed\ProductExperienceManagement\Persistence\SpyImportJobRunErrorQuery;
-use Orm\Zed\ProductExperienceManagement\Persistence\SpyImportJobRunQuery;
 use Orm\Zed\ProductExperienceManagement\Persistence\SpyProductAttributeStorageQuery;
-use Spryker\Service\UtilEncoding\UtilEncodingServiceInterface;
 use Spryker\Zed\Kernel\Persistence\AbstractPersistenceFactory;
 use SprykerFeature\Zed\ProductExperienceManagement\Persistence\Propel\Mapper\ProductAttributeStorageMapper;
-use SprykerFeature\Zed\ProductExperienceManagement\Persistence\Propel\Mapper\ProductExperienceManagementMapper;
-use SprykerFeature\Zed\ProductExperienceManagement\ProductExperienceManagementDependencyProvider;
 
 /**
  * @method \SprykerFeature\Zed\ProductExperienceManagement\ProductExperienceManagementConfig getConfig()
@@ -26,31 +20,6 @@ use SprykerFeature\Zed\ProductExperienceManagement\ProductExperienceManagementDe
  */
 class ProductExperienceManagementPersistenceFactory extends AbstractPersistenceFactory
 {
-    public function createImportJobQuery(): SpyImportJobQuery
-    {
-        return SpyImportJobQuery::create();
-    }
-
-    public function createImportJobRunQuery(): SpyImportJobRunQuery
-    {
-        return SpyImportJobRunQuery::create();
-    }
-
-    public function createImportJobRunErrorQuery(): SpyImportJobRunErrorQuery
-    {
-        return SpyImportJobRunErrorQuery::create();
-    }
-
-    public function createMapper(): ProductExperienceManagementMapper
-    {
-        return new ProductExperienceManagementMapper($this->getUtilEncodingService());
-    }
-
-    public function getUtilEncodingService(): UtilEncodingServiceInterface
-    {
-        return $this->getProvidedDependency(ProductExperienceManagementDependencyProvider::SERVICE_UTIL_ENCODING);
-    }
-
     public function createProductAttributeStorageQuery(): SpyProductAttributeStorageQuery
     {
         return SpyProductAttributeStorageQuery::create();

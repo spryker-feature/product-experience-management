@@ -9,23 +9,10 @@ declare(strict_types=1);
 
 namespace SprykerFeature\Zed\ProductExperienceManagement\Persistence;
 
-use Generated\Shared\Transfer\ImportJobRunErrorTransfer;
-use Generated\Shared\Transfer\ImportJobRunTransfer;
-use Generated\Shared\Transfer\ImportJobTransfer;
 use Generated\Shared\Transfer\ProductAttributeStorageTransfer;
 
 interface ProductExperienceManagementEntityManagerInterface
 {
-    public function createImportJob(ImportJobTransfer $importJobTransfer): ImportJobTransfer;
-
-    public function updateImportJob(ImportJobTransfer $importJobTransfer): ImportJobTransfer;
-
-    public function createImportJobRun(ImportJobRunTransfer $importJobRunTransfer): ImportJobRunTransfer;
-
-    public function updateImportJobRun(ImportJobRunTransfer $importJobRunTransfer): ImportJobRunTransfer;
-
-    public function createImportJobRunError(ImportJobRunErrorTransfer $importJobRunErrorTransfer): ImportJobRunErrorTransfer;
-
     public function saveProductAttributeStorage(
         int $idProductManagementAttribute,
         string $attributeKey,

@@ -11,12 +11,13 @@ namespace SprykerFeature\Zed\ProductExperienceManagement\Business\Export\Placeho
 
 use Orm\Zed\ProductImage\Persistence\Map\SpyProductImageSetToProductImageTableMap;
 use Orm\Zed\ProductImage\Persistence\SpyProductImageSetToProductImageQuery;
+use Spryker\Zed\DataExchangeExtension\Dependency\Plugin\ColumnPlaceholderProviderInterface;
 use Spryker\Zed\Locale\Business\LocaleFacadeInterface;
 use Spryker\Zed\PriceProduct\Business\PriceProductFacadeInterface;
 use Spryker\Zed\Stock\Business\StockFacadeInterface;
 use Spryker\Zed\Store\Business\StoreFacadeInterface;
 
-class ProductCsvExportPlaceholderProvider implements ExportPlaceholderProviderInterface
+class ProductCsvExportPlaceholderProvider implements ColumnPlaceholderProviderInterface
 {
     protected const string PLACEHOLDER_LOCALE = 'locale';
 

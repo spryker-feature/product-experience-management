@@ -24,9 +24,8 @@ use Spryker\Zed\Product\Business\ProductFacadeInterface;
 use Spryker\Zed\Product\Dependency\ProductEvents;
 use Spryker\Zed\Propel\Persistence\BatchProcessor\ActiveRecordBatchProcessorTrait;
 use Spryker\Zed\Url\Dependency\UrlEvents;
-use SprykerFeature\Zed\ProductExperienceManagement\Business\Dependency\Plugin\ImportStepInterface;
 
-class ProductCsvImportUrlStep extends AbstractProductCsvImportStep implements ImportStepInterface
+class ProductCsvImportUrlStep extends AbstractProductCsvImportStep
 {
     use ActiveRecordBatchProcessorTrait;
 

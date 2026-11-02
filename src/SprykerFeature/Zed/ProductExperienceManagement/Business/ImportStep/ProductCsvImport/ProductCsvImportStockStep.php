@@ -30,13 +30,12 @@ use Spryker\Zed\Propel\Persistence\BatchProcessor\ActiveRecordBatchProcessorTrai
 use Spryker\Zed\PropelOrm\Business\Runtime\ActiveQuery\Criteria;
 use Spryker\Zed\Stock\Business\StockFacadeInterface;
 use Spryker\Zed\Store\Business\StoreFacadeInterface;
-use SprykerFeature\Zed\ProductExperienceManagement\Business\Dependency\Plugin\ImportStepInterface;
 
 /**
  * Processes per-warehouse stock columns: "Stock ({warehouse})" → system "stock.{warehouse}".
  * Value is a quantity number or NOOS (Never Out Of Stock).
  */
-class ProductCsvImportStockStep extends AbstractProductCsvImportStep implements ImportStepInterface
+class ProductCsvImportStockStep extends AbstractProductCsvImportStep
 {
     use ActiveRecordBatchProcessorTrait;
 

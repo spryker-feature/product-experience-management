@@ -1,5 +1,20 @@
 # Changelog
 
+## 5.0.0 - 2026-10-28
+
+### Changed
+
+- The CSV import/export engine (import jobs, job runs, run errors, the Back Office Import/Export/Template pages, the `import:job:run` console command, the `spy_import_job*` tables and the `ImportJob*` transfers) moved to the new `spryker/data-exchange` module; the plugin contracts moved to `spryker/data-exchange-extension`. This module now ships the product plugin only: `ProductCsvImportSchemaPlugin` (job type `products-csv-import`), the import and export steps and `ProductCsvExportPlaceholderProvider`.
+- `ProductCsvImportSchemaPlugin` implements `Spryker\Zed\DataExchangeExtension\Dependency\Plugin\ImportSchemaPluginInterface` and `ExportSchemaPluginInterface`, and exposes `getPlaceholderProvider()`.
+- The product import steps implement `Spryker\Zed\DataExchangeExtension\Dependency\Plugin\ImportStepInterface` through the module's own `AbstractProductCsvImportStep`; the module depends on `spryker/data-exchange-extension` only.
+- Back Office URLs moved from `/product-experience-management/{job,run,export,template}` to `/data-exchange/...`; the file systems are now `data-exchange-imports` and `data-exchange-exports`.
+
+### Removed
+
+- Facade methods `getImportJobCollection()`, `createImportJobCollection()`, `createImportJobRunCollection()`, `getImportJobRunCollection()`, `getImportJobRunErrorCollection()`, `exportData()`, `processNextPendingRun()` (now on `DataExchangeFacadeInterface`).
+- `Business\Dependency\Plugin\*` interfaces, `Business\Export\PlaceholderProvider\ExportPlaceholderProviderInterface`, the engine config getters (`getImportStatus*()`, `getImportFileSystemName()`, `getExportFileSystemName()`, `getImportCsvBatchSize()`, `getExportCsvBatchSize()`, `getImportMaxFileSizeString()`, `getAllowedMimeTypesWithExtensions()`, `getImportErrorDisplayThreshold()`, `getImportDefaultContentType()`), the dependency provider constants `SERVICE_FILE_SYSTEM`, `FACADE_EVENT`, `SERVICE_UTIL_DATE_TIME`, `PLUGINS_IMPORT_SCHEMA`, `PLUGINS_IMPORT_PRE_PROCESSOR`, `PLUGINS_IMPORT_POST_PROCESSOR`, the `ImportJob*` transfers, the `spy_import_job` schema and the `ImportJobHelper` test helper.
+- Dependencies `spryker/event`, `spryker/file-system`, `spryker/log`, `spryker/util-date-time`, `spryker/util-text`.
+
 ## 4.0.0 - 2026-09-04
 
 ### Added

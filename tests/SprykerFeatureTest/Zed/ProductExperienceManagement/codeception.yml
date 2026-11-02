@@ -26,7 +26,6 @@ suites:
                 - \SprykerTest\Shared\Testify\Helper\DataCleanupHelper
                 - \SprykerTest\Zed\Testify\Helper\Business\BusinessHelper
                 - \SprykerTest\Service\Container\Helper\ContainerHelper
-                - \SprykerFeatureTest\Shared\ProductExperienceManagement\Helper\ImportJobHelper
     Communication:
         path: Communication
         actor: ProductExperienceManagementCommunicationTester
@@ -41,7 +40,6 @@ suites:
                 - \SprykerTest\Shared\Testify\Helper\DataCleanupHelper
                 - \SprykerTest\Zed\Testify\Helper\Business\BusinessHelper
                 - \SprykerTest\Service\Container\Helper\ContainerHelper
-                - \SprykerFeatureTest\Shared\ProductExperienceManagement\Helper\ImportJobHelper
                 - \SprykerTest\Shared\Testify\Helper\ConfigHelper
                 - \SprykerTest\Shared\Testify\Helper\LocatorHelper
                 - \SprykerTest\Shared\Testify\Helper\DependencyHelper

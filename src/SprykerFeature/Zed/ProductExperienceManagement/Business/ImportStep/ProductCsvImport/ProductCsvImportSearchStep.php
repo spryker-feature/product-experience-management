@@ -17,17 +17,14 @@ use Orm\Zed\ProductSearch\Persistence\SpyProductSearchQuery;
 use Spryker\Zed\Product\Dependency\ProductEvents;
 use Spryker\Zed\ProductSearch\Dependency\ProductSearchEvents;
 use Spryker\Zed\Propel\Persistence\BatchProcessor\ActiveRecordBatchProcessorTrait;
-use SprykerFeature\Zed\ProductExperienceManagement\Business\Dependency\Plugin\ImportStepInterface;
 
 /**
  * Ensures spy_product_search entries exist with is_searchable=1 for all imported concrete products.
  * Required for products to appear in Elasticsearch search results.
  */
-class ProductCsvImportSearchStep implements ImportStepInterface
+class ProductCsvImportSearchStep extends AbstractProductCsvImportStep
 {
     use ActiveRecordBatchProcessorTrait;
-
-    protected const string COLUMN_CONCRETE_SKU = 'concrete_sku';
 
     protected const string PATTERN_NAME_LOCALE = '/^name\.([a-z]{2}_[a-z]{2})$/';
 
@@ -57,7 +54,7 @@ class ProductCsvImportSearchStep implements ImportStepInterface
         $newProductConcreteIds = [];
 
         foreach ($rows as $row) {
-            $concreteSku = $this->resolveConcreteSku($row);
+            $concreteSku = $this->findConcreteSku($row);
 
             if ($concreteSku === null) {
                 continue;
@@ -198,7 +195,7 @@ class ProductCsvImportSearchStep implements ImportStepInterface
     /**
      * @param array<string, string> $row
      */
-    protected function resolveConcreteSku(array $row): ?string
+    protected function findConcreteSku(array $row): ?string
     {
         $concreteSku = trim($row[static::COLUMN_CONCRETE_SKU] ?? '');
 
