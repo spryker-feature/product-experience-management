@@ -44,6 +44,16 @@ class ProductCsvImportShipmentTypeStep extends AbstractProductCsvImportStep
 
     /**
      * {@inheritDoc}
+     */
+    public function resetCache(): void
+    {
+        static::$productConcreteIdCache = [];
+        static::$shipmentTypeCache = [];
+        static::$shipmentTypeCacheWarmed = false;
+    }
+
+    /**
+     * {@inheritDoc}
      *
      * @param array<int, array<string, string>> $rows
      * @param array<string, string> $propertyNamesInFile

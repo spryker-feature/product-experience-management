@@ -37,6 +37,15 @@ class ProductCsvImportAbstractLocalizedAttributesStep extends AbstractProductCsv
 
     /**
      * {@inheritDoc}
+     */
+    public function resetCache(): void
+    {
+        static::$productAbstractIdCache = [];
+        static::$localeCache = [];
+    }
+
+    /**
+     * {@inheritDoc}
      *
      * @param array<int, array<string, string>> $rows
      * @param array<string, string> $propertyNamesInFile

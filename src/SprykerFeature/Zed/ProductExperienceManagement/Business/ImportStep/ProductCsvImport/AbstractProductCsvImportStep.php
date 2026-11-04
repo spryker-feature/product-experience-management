@@ -11,13 +11,15 @@ namespace SprykerFeature\Zed\ProductExperienceManagement\Business\ImportStep\Pro
 
 use Generated\Shared\Transfer\ImportPublishEventTransfer;
 use Generated\Shared\Transfer\ImportStepErrorTransfer;
+use Spryker\Zed\DataExchangeExtension\Dependency\Plugin\CacheResettableImportStepInterface;
 use Spryker\Zed\DataExchangeExtension\Dependency\Plugin\ImportStepInterface;
 
 /**
- * Base class of the product import steps. Implements the engine's step contract and provides the helpers for the two
- * transfers every step reports: a row error and a publish event.
+ * Base class of the product import steps. Implements the engine's step contract, provides the helpers for the two
+ * transfers every step reports (a row error and a publish event). Opts every product step into the engine's per-batch
+ * cache reset with a no-op `resetCache()`; a step with static lookup caches overrides it.
  */
-abstract class AbstractProductCsvImportStep implements ImportStepInterface
+abstract class AbstractProductCsvImportStep implements ImportStepInterface, CacheResettableImportStepInterface
 {
     protected const string COLUMN_ABSTRACT_SKU = 'abstract_sku';
 
@@ -41,6 +43,16 @@ abstract class AbstractProductCsvImportStep implements ImportStepInterface
         return (new ImportPublishEventTransfer())
             ->setEventName($eventName)
             ->setEntityId($entityId);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * No-op: a step that keeps lookup caches overrides this and clears them.
+     * A step that overrides this method must call the parent method.
+     */
+    public function resetCache(): void
+    {
     }
 
     /**

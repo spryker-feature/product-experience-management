@@ -40,6 +40,15 @@ class ProductCsvImportSearchStep extends AbstractProductCsvImportStep
 
     /**
      * {@inheritDoc}
+     */
+    public function resetCache(): void
+    {
+        static::$productConcreteIdCache = [];
+        static::$localeIds = null;
+    }
+
+    /**
+     * {@inheritDoc}
      *
      * @param array<int, array<string, string>> $rows
      * @param array<string, string> $propertyNamesInFile

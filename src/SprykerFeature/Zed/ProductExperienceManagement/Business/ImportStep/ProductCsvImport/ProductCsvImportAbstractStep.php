@@ -51,6 +51,15 @@ class ProductCsvImportAbstractStep extends AbstractProductCsvImportStep
 
     /**
      * {@inheritDoc}
+     */
+    public function resetCache(): void
+    {
+        static::$productAbstractEntityCache = [];
+        static::$taxSetIdByNameCache = [];
+    }
+
+    /**
+     * {@inheritDoc}
      *
      * @param array<int, array<string, string>> $rows
      * @param array<string, string> $propertyNamesInFile

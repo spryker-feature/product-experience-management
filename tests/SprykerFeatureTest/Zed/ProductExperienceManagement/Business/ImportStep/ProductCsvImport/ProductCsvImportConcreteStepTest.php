@@ -11,6 +11,8 @@ namespace SprykerFeatureTest\Zed\ProductExperienceManagement\Business\ImportStep
 
 use Codeception\Test\Unit;
 use Generated\Shared\Transfer\ImportStepResponseTransfer;
+use Generated\Shared\Transfer\ProductAbstractTransfer;
+use SprykerFeature\Zed\ProductExperienceManagement\Business\ImportStep\ProductCsvImport\AbstractProductCsvImportStep;
 use SprykerFeatureTest\Zed\ProductExperienceManagement\ProductExperienceManagementBusinessTester;
 
 /**
@@ -32,11 +34,20 @@ class ProductCsvImportConcreteStepTest extends Unit
 
     protected const string PROPERTY_NAME_PRODUCT_STATUS_IN_FILE = 'Product Status';
 
+    protected const string PROPERTY_NAME_ABSTRACT_SKU_IN_FILE = 'Abstract SKU';
+
     protected const string CONCRETE_SKU = 'concrete-sku-product-status-test';
 
     protected const int CSV_ROW_NUMBER = 3;
 
     protected ProductExperienceManagementBusinessTester $tester;
+
+    protected function _after(): void
+    {
+        $this->createStep()->resetCache();
+
+        parent::_after();
+    }
 
     public function testReturnsErrorWhenProductStatusIsAnAbstractProductStatus(): void
     {
@@ -100,14 +111,71 @@ class ProductCsvImportConcreteStepTest extends Unit
         $this->assertNull($this->findProductStatusErrorMessage($response));
     }
 
+    public function testResolvesAnAbstractProductCreatedAfterItWasCachedAsMissingOnceTheCacheIsReset(): void
+    {
+        // Arrange
+        $abstractSku = uniqid('abstract-sku-cache-reset-', true);
+        $concreteSku = uniqid('concrete-sku-cache-reset-', true);
+        $row = $this->buildConcreteRow('active', $abstractSku, $concreteSku);
+        $step = $this->createStep();
+
+        $missResponse = $step->executeBatch([static::CSV_ROW_NUMBER => $row]);
+        $this->tester->haveProductAbstract([ProductAbstractTransfer::SKU => $abstractSku]);
+        $cachedMissResponse = $step->executeBatch([static::CSV_ROW_NUMBER + 1 => $row]);
+
+        // Act
+        $step->resetCache();
+        $response = $step->executeBatch([static::CSV_ROW_NUMBER + 2 => $row]);
+
+        // Assert
+        $this->assertSame($this->buildMissingAbstractProductErrorMessage($abstractSku), $this->findAbstractSkuErrorMessage($missResponse));
+        $this->assertSame(
+            $this->buildMissingAbstractProductErrorMessage($abstractSku),
+            $this->findAbstractSkuErrorMessage($cachedMissResponse),
+            'Without a reset the miss recorded by the first batch shadows the abstract product created afterwards',
+        );
+        $this->assertTrue($response->getIsSuccessful());
+        $this->assertNull($this->findAbstractSkuErrorMessage($response), 'After the reset the step looks the abstract product up again and finds it');
+    }
+
+    protected function createStep(): AbstractProductCsvImportStep
+    {
+        /** @var \SprykerFeature\Zed\ProductExperienceManagement\Business\ProductExperienceManagementBusinessFactory $factory */
+        $factory = $this->tester->getFactory();
+        /** @var \SprykerFeature\Zed\ProductExperienceManagement\Business\ImportStep\ProductCsvImport\AbstractProductCsvImportStep $step */
+        $step = $factory->createProductCsvImportConcreteStep();
+
+        return $step;
+    }
+
+    protected function buildMissingAbstractProductErrorMessage(string $abstractSku): string
+    {
+        return sprintf(
+            'The value \'%s\' in field \'%s\' is not valid because the abstract product does not exist. Expected: an existing abstract product SKU. Please update the value.',
+            $abstractSku,
+            static::COLUMN_ABSTRACT_SKU,
+        );
+    }
+
+    protected function findAbstractSkuErrorMessage(ImportStepResponseTransfer $response): ?string
+    {
+        foreach ($response->getErrors() as $error) {
+            if (str_contains((string)$error->getErrorMessage(), 'abstract product')) {
+                return $error->getErrorMessage();
+            }
+        }
+
+        return null;
+    }
+
     /**
      * @return array<string, string>
      */
-    protected function buildConcreteRow(string $productStatus): array
+    protected function buildConcreteRow(string $productStatus, string $abstractSku = '', string $concreteSku = self::CONCRETE_SKU): array
     {
         return [
-            static::COLUMN_ABSTRACT_SKU => '',
-            static::COLUMN_CONCRETE_SKU => static::CONCRETE_SKU,
+            static::COLUMN_ABSTRACT_SKU => $abstractSku,
+            static::COLUMN_CONCRETE_SKU => $concreteSku,
             static::COLUMN_PRODUCT_STATUS => $productStatus,
         ];
     }

@@ -62,6 +62,18 @@ class ProductCsvImportPriceStoreStep extends AbstractProductCsvImportStep
 
     /**
      * {@inheritDoc}
+     */
+    public function resetCache(): void
+    {
+        static::$storeCache = [];
+        static::$currencyCache = [];
+        static::$productAbstractIdCache = [];
+        static::$productConcreteIdCache = [];
+        static::$priceProductCache = [];
+    }
+
+    /**
+     * {@inheritDoc}
      *
      * @param array<int, array<string, string>> $rows
      * @param array<string, string> $propertyNamesInFile

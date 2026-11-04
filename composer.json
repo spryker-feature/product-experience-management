@@ -8,7 +8,7 @@
         "spryker/availability": "^9.0.0",
         "spryker/category": "^5.0.0",
         "spryker/currency": "^4.0.0",
-        "spryker/data-exchange-extension": "^0.1.0",
+        "spryker/data-exchange-extension": "^0.2.0",
         "spryker/decimal-object": "^1.2.0",
         "spryker/event-behavior": "^1.30.0",
         "spryker/kernel": "^3.30.0",

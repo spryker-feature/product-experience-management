@@ -26,6 +26,8 @@ suites:
                 - \SprykerTest\Shared\Testify\Helper\DataCleanupHelper
                 - \SprykerTest\Zed\Testify\Helper\Business\BusinessHelper
                 - \SprykerTest\Service\Container\Helper\ContainerHelper
+                - \SprykerTest\Shared\Product\Helper\ProductDataHelper
+                - \SprykerTest\Shared\ShipmentType\Helper\ShipmentTypeHelper
     Communication:
         path: Communication
         actor: ProductExperienceManagementCommunicationTester

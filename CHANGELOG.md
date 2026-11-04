@@ -1,5 +1,12 @@
 # Changelog
 
+## 5.1.0 - 2026-10-30
+
+### Changed
+
+- `AbstractProductCsvImportStep` implements `Spryker\Zed\DataExchangeExtension\Dependency\Plugin\CacheResettableImportStepInterface` with a no-op `resetCache()`; the 15 product import steps override it and clear their static lookup caches (`sku => id`, locale, store, currency, tax set, price type, stock, shipment type, merchant, category and entity caches) there. The engine calls it after every batch, so the step caches stay bounded per batch and an entity cached as missing in one batch is found again once a later batch created it.
+- Requires `spryker/data-exchange-extension` `^0.2.0`.
+
 ## 5.0.0 - 2026-10-28
 
 ### Changed
