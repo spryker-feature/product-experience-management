@@ -28,6 +28,8 @@ suites:
                 - \SprykerTest\Service\Container\Helper\ContainerHelper
                 - \SprykerTest\Shared\Product\Helper\ProductDataHelper
                 - \SprykerTest\Shared\ShipmentType\Helper\ShipmentTypeHelper
+                - \SprykerTest\Zed\Merchant\Helper\MerchantHelper
+                - \SprykerTest\Shared\MerchantProduct\Helper\MerchantProductHelper
     Communication:
         path: Communication
         actor: ProductExperienceManagementCommunicationTester

@@ -143,16 +143,13 @@ class ProductCsvImportMerchantStep extends AbstractProductCsvImportStep
             return null;
         }
 
-        $idMerchant = $merchantEntity->getIdMerchant();
-
         $merchantProductEntity = SpyMerchantProductAbstractQuery::create()
-            ->filterByFkMerchant($idMerchant)
             ->filterByFkProductAbstract($idProductAbstract)
             ->findOneOrCreate();
 
-        if ($merchantProductEntity->isNew()) {
-            $this->persist($merchantProductEntity);
-        }
+        $merchantProductEntity->setFkMerchant($merchantEntity->getIdMerchant());
+
+        $this->persist($merchantProductEntity);
 
         return $idProductAbstract;
     }
