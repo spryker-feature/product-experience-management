@@ -184,7 +184,7 @@ class ProductCsvImportSearchStep extends AbstractProductCsvImportStep
 
         $rawLocaleIds = array_map(static fn ($locale) => $locale->getIdLocale(), $localeEntities->getArrayCopy());
 
-        static::$localeIds = array_values(array_map(static fn (mixed $id): int => (int)$id, array_filter($rawLocaleIds)));
+        static::$localeIds = array_values(array_map(static fn (mixed $idLocale): int => (int)$idLocale, array_filter($rawLocaleIds)));
 
         return static::$localeIds;
     }
