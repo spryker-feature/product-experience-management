@@ -64,7 +64,7 @@ class VisibilityAttributeTableExpander implements VisibilityAttributeTableExpand
         $labels = [];
 
         foreach (explode(',', $visibility) as $type) {
-            $labels[] = sprintf(static::BADGE_TEMPLATE, trim($type));
+            $labels[] = sprintf(static::BADGE_TEMPLATE, htmlspecialchars(trim($type), ENT_QUOTES, 'UTF-8'));
         }
 
         return [static::COL_VISIBILITY => implode(' ', $labels)];
