@@ -14,7 +14,10 @@ use Generated\Shared\Transfer\ImportStepErrorTransfer;
 use Generated\Shared\Transfer\ImportStepResponseTransfer;
 use Orm\Zed\Category\Persistence\SpyCategoryQuery;
 use Orm\Zed\Product\Persistence\SpyProductAbstractQuery;
+use Orm\Zed\ProductCategory\Persistence\Map\SpyProductCategoryTableMap;
+use Orm\Zed\ProductCategory\Persistence\SpyProductCategory;
 use Orm\Zed\ProductCategory\Persistence\SpyProductCategoryQuery;
+use Spryker\Zed\Kernel\Persistence\EntityManager\TransactionTrait;
 use Spryker\Zed\Product\Dependency\ProductEvents;
 use Spryker\Zed\ProductCategory\Dependency\ProductCategoryEvents;
 use Spryker\Zed\Propel\Persistence\BatchProcessor\ActiveRecordBatchProcessorTrait;
@@ -22,6 +25,7 @@ use Spryker\Zed\Propel\Persistence\BatchProcessor\ActiveRecordBatchProcessorTrai
 class ProductCsvImportCategoryStep extends AbstractProductCsvImportStep
 {
     use ActiveRecordBatchProcessorTrait;
+    use TransactionTrait;
 
     protected const string COLUMN_CATEGORIES = 'categories';
 
@@ -59,63 +63,170 @@ class ProductCsvImportCategoryStep extends AbstractProductCsvImportStep
     {
         $response = (new ImportStepResponseTransfer())->setIsSuccessful(true);
 
-        $processedProductAbstractIds = [];
+        $requestedCategoryIdsGroupedByIdProductAbstract = $this->collectRequestedCategoryIds($rows, $propertyNamesInFile, $response);
+        $existingCategoryIdsGroupedByIdProductAbstract = $this->getExistingCategoryIdsGroupedByIdProductAbstract(array_keys($requestedCategoryIdsGroupedByIdProductAbstract));
+
+        $categoryIdsToAddGroupedByIdProductAbstract = $this->diffCategoryIds($requestedCategoryIdsGroupedByIdProductAbstract, $existingCategoryIdsGroupedByIdProductAbstract);
+        $categoryIdsToRemoveGroupedByIdProductAbstract = $this->diffCategoryIds($existingCategoryIdsGroupedByIdProductAbstract, $requestedCategoryIdsGroupedByIdProductAbstract);
+
+        $this->getTransactionHandler()->handleTransaction(function () use ($categoryIdsToAddGroupedByIdProductAbstract, $categoryIdsToRemoveGroupedByIdProductAbstract): void {
+            $this->removeProductCategories($categoryIdsToRemoveGroupedByIdProductAbstract);
+            $this->persistNewProductCategories($categoryIdsToAddGroupedByIdProductAbstract);
+            $this->commit();
+        });
+
+        $this->addPublishEvents(array_keys($categoryIdsToAddGroupedByIdProductAbstract + $categoryIdsToRemoveGroupedByIdProductAbstract), $response);
+
+        return $response;
+    }
+
+    /**
+     * @param array<int> $productAbstractIds
+     *
+     * @return array<int, array<int>>
+     */
+    protected function getExistingCategoryIdsGroupedByIdProductAbstract(array $productAbstractIds): array
+    {
+        if ($productAbstractIds === []) {
+            return [];
+        }
+
+        $productCategoryRows = SpyProductCategoryQuery::create()
+            ->filterByFkProductAbstract_In($productAbstractIds)
+            ->select([SpyProductCategoryTableMap::COL_FK_PRODUCT_ABSTRACT, SpyProductCategoryTableMap::COL_FK_CATEGORY])
+            ->find();
+
+        $existingCategoryIdsGroupedByIdProductAbstract = [];
+
+        foreach ($productCategoryRows as $productCategoryRow) {
+            $idProductAbstract = (int)$productCategoryRow[SpyProductCategoryTableMap::COL_FK_PRODUCT_ABSTRACT];
+            $existingCategoryIdsGroupedByIdProductAbstract[$idProductAbstract][] = (int)$productCategoryRow[SpyProductCategoryTableMap::COL_FK_CATEGORY];
+        }
+
+        return $existingCategoryIdsGroupedByIdProductAbstract;
+    }
+
+    /**
+     * @param array<int, array<int>> $categoryIdsToRemoveGroupedByIdProductAbstract
+     */
+    protected function removeProductCategories(array $categoryIdsToRemoveGroupedByIdProductAbstract): void
+    {
+        if ($categoryIdsToRemoveGroupedByIdProductAbstract === []) {
+            return;
+        }
+
+        $productCategoryEntities = SpyProductCategoryQuery::create()
+            ->filterByFkProductAbstract_In(array_keys($categoryIdsToRemoveGroupedByIdProductAbstract))
+            ->find();
+
+        foreach ($productCategoryEntities as $productCategoryEntity) {
+            $categoryIdsToRemove = $categoryIdsToRemoveGroupedByIdProductAbstract[$productCategoryEntity->getFkProductAbstract()];
+
+            if (in_array($productCategoryEntity->getFkCategory(), $categoryIdsToRemove, true)) {
+                $this->remove($productCategoryEntity);
+            }
+        }
+    }
+
+    /**
+     * @param array<int, array<int>> $categoryIdsToAddGroupedByIdProductAbstract
+     */
+    protected function persistNewProductCategories(array $categoryIdsToAddGroupedByIdProductAbstract): void
+    {
+        foreach ($categoryIdsToAddGroupedByIdProductAbstract as $idProductAbstract => $categoryIds) {
+            foreach ($categoryIds as $idCategory) {
+                $this->persist(
+                    (new SpyProductCategory())
+                        ->setFkProductAbstract($idProductAbstract)
+                        ->setFkCategory($idCategory)
+                        ->setProductOrder(0),
+                );
+            }
+        }
+    }
+
+    /**
+     * @param array<int, array<int>> $categoryIdsGroupedByIdProductAbstract
+     * @param array<int, array<int>> $subtractedCategoryIdsGroupedByIdProductAbstract
+     *
+     * @return array<int, array<int>>
+     */
+    protected function diffCategoryIds(array $categoryIdsGroupedByIdProductAbstract, array $subtractedCategoryIdsGroupedByIdProductAbstract): array
+    {
+        $categoryIdsDifferenceGroupedByIdProductAbstract = [];
+
+        foreach ($categoryIdsGroupedByIdProductAbstract as $idProductAbstract => $categoryIds) {
+            $categoryIdsDifference = array_diff($categoryIds, $subtractedCategoryIdsGroupedByIdProductAbstract[$idProductAbstract] ?? []);
+
+            if ($categoryIdsDifference !== []) {
+                $categoryIdsDifferenceGroupedByIdProductAbstract[$idProductAbstract] = array_values($categoryIdsDifference);
+            }
+        }
+
+        return $categoryIdsDifferenceGroupedByIdProductAbstract;
+    }
+
+    /**
+     * @param array<int, array<string, string>> $rows
+     * @param array<string, string> $propertyNamesInFile
+     *
+     * @return array<int, array<int>>
+     */
+    protected function collectRequestedCategoryIds(array $rows, array $propertyNamesInFile, ImportStepResponseTransfer $response): array
+    {
+        $requestedCategoryIdsGroupedByIdProductAbstract = [];
 
         foreach ($rows as $rowNumber => $row) {
-            if ($this->isConcreteRow($row)) {
+            if ($this->isConcreteRow($row) || !$this->hasCategoriesColumn($row)) {
                 continue;
             }
 
-            $categoriesValue = $this->resolveCategories($row);
-
-            if ($categoriesValue === '') {
-                continue;
-            }
-
-            $abstractSku = $this->resolveAbstractSku($row);
-            $idProductAbstract = $this->resolveProductAbstractId($abstractSku);
+            $idProductAbstract = $this->resolveProductAbstractId($this->resolveAbstractSku($row));
 
             if ($idProductAbstract === null) {
                 continue;
             }
 
-            $categoryKeys = $this->parseCategoryKeys($categoriesValue);
+            $categoryIds = $this->resolveCategoryIds($row, $rowNumber, $propertyNamesInFile, $response);
 
-            foreach ($categoryKeys as $categoryKey) {
-                $idCategory = $this->resolveCategoryId($categoryKey);
-
-                if ($idCategory === null) {
-                    $response->setIsSuccessful(false);
-                    $response->addError(
-                        (new ImportStepErrorTransfer())->setCsvRowNumber($rowNumber)->setErrorMessage(sprintf('The value \'%s\' in field \'%s\' is not valid because the category does not exist. Expected: an existing category key. Please update the value.', $categoryKey, $propertyNamesInFile[static::COLUMN_CATEGORIES] ?? static::COLUMN_CATEGORIES)),
-                    );
-
-                    continue;
-                }
-
-                $this->ensureCategoryRelation($idProductAbstract, $idCategory);
+            if ($categoryIds === null) {
+                continue;
             }
 
-            $processedProductAbstractIds[] = $idProductAbstract;
+            $requestedCategoryIdsGroupedByIdProductAbstract[$idProductAbstract] = $categoryIds;
         }
 
-        $this->commit();
-        $this->addPublishEvents($processedProductAbstractIds, $response);
-
-        return $response;
+        return $requestedCategoryIdsGroupedByIdProductAbstract;
     }
 
-    protected function ensureCategoryRelation(int $idProductAbstract, int $idCategory): void
+    /**
+     * @param array<string, string> $row
+     * @param array<string, string> $propertyNamesInFile
+     *
+     * @return array<int>|null
+     */
+    protected function resolveCategoryIds(array $row, int $rowNumber, array $propertyNamesInFile, ImportStepResponseTransfer $response): ?array
     {
-        $relation = SpyProductCategoryQuery::create()
-            ->filterByFkProductAbstract($idProductAbstract)
-            ->filterByFkCategory($idCategory)
-            ->findOneOrCreate();
+        $categoryIds = [];
+        $hasUnknownCategory = false;
 
-        if ($relation->isNew()) {
-            $relation->setProductOrder(0);
-            $this->persist($relation);
+        foreach ($this->parseCategoryKeys($this->resolveCategories($row)) as $categoryKey) {
+            $idCategory = $this->resolveCategoryId($categoryKey);
+
+            if ($idCategory === null) {
+                $hasUnknownCategory = true;
+                $response->setIsSuccessful(false);
+                $response->addError(
+                    (new ImportStepErrorTransfer())->setCsvRowNumber($rowNumber)->setErrorMessage(sprintf('The value \'%s\' in field \'%s\' is not valid because the category does not exist. Expected: an existing category key. Please update the value.', $categoryKey, $propertyNamesInFile[static::COLUMN_CATEGORIES] ?? static::COLUMN_CATEGORIES)),
+                );
+
+                continue;
+            }
+
+            $categoryIds[] = $idCategory;
         }
+
+        return $hasUnknownCategory ? null : array_values(array_unique($categoryIds));
     }
 
     protected function resolveProductAbstractId(string $abstractSku): ?int
@@ -166,6 +277,14 @@ class ProductCsvImportCategoryStep extends AbstractProductCsvImportStep
                 (new ImportPublishEventTransfer())->setEventName(ProductCategoryEvents::PRODUCT_CATEGORY_PUBLISH)->setEntityId($idProductAbstract),
             );
         }
+    }
+
+    /**
+     * @param array<string, string> $row
+     */
+    protected function hasCategoriesColumn(array $row): bool
+    {
+        return array_key_exists(static::COLUMN_CATEGORIES, $row);
     }
 
     /**

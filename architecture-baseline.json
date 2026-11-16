@@ -1,1 +1,9 @@
-[]
+[
+    {
+        "fileName": "src/SprykerFeature/Zed/ProductExperienceManagement/Business/ImportStep/ProductCsvImport/ProductCsvImportCategoryStep.php",
+        "description": "Zed Persistence Layer - Spy Entity: Entity `SpyProductCategory` initialized in `SprykerFeature\\Zed\\ProductExperienceManagement\\Business\\ImportStep\\ProductCsvImport\\ProductCsvImportCategoryStep`. The class violates rule \"Entity can be initialized in Repository or EntityManager only.\".",
+        "rule": "SpyEntityUsageRule",
+        "ruleset": "Spryker Zed",
+        "priority": "3"
+    }
+]

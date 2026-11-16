@@ -30,6 +30,8 @@ class ProductCsvImportMerchantStepTest extends Unit
 {
     protected const string COLUMN_ABSTRACT_SKU = 'abstract_sku';
 
+    protected const string COLUMN_CONCRETE_SKU = 'concrete_sku';
+
     protected const string COLUMN_MERCHANT = 'merchant';
 
     protected const int CSV_ROW_NUMBER = 2;
@@ -106,6 +108,88 @@ class ProductCsvImportMerchantStepTest extends Unit
         $this->assertSame([], $this->findMerchantIds($productAbstractTransfer->getIdProductAbstractOrFail()));
     }
 
+    public function testExecuteBatchRemovesMerchantAssignmentWhenMerchantValueIsEmpty(): void
+    {
+        // Arrange
+        $productAbstractTransfer = $this->tester->haveProductAbstract();
+        $this->haveMerchantProductAbstract($this->tester->haveMerchant()->getIdMerchantOrFail(), $productAbstractTransfer->getIdProductAbstractOrFail());
+
+        // Act
+        $importStepResponseTransfer = $this->executeStep($productAbstractTransfer->getSkuOrFail(), '');
+
+        // Assert
+        $this->assertTrue($importStepResponseTransfer->getIsSuccessful());
+        $this->assertSame([], $this->findMerchantIds($productAbstractTransfer->getIdProductAbstractOrFail()));
+        $this->assertProductAbstractPublishEvent($importStepResponseTransfer, $productAbstractTransfer->getIdProductAbstractOrFail());
+    }
+
+    public function testExecuteBatchReportsNoChangeWhenMerchantValueIsEmptyAndProductAbstractHasNoMerchant(): void
+    {
+        // Arrange
+        $productAbstractTransfer = $this->tester->haveProductAbstract();
+
+        // Act
+        $importStepResponseTransfer = $this->executeStep($productAbstractTransfer->getSkuOrFail(), '');
+
+        // Assert
+        $this->assertTrue($importStepResponseTransfer->getIsSuccessful());
+        $this->assertCount(0, $importStepResponseTransfer->getPublishEvents());
+    }
+
+    public function testExecuteBatchKeepsMerchantAssignmentWhenMerchantColumnIsAbsent(): void
+    {
+        // Arrange
+        $productAbstractTransfer = $this->tester->haveProductAbstract();
+        $merchantTransfer = $this->tester->haveMerchant();
+        $this->haveMerchantProductAbstract($merchantTransfer->getIdMerchantOrFail(), $productAbstractTransfer->getIdProductAbstractOrFail());
+
+        // Act
+        $importStepResponseTransfer = $this->executeStepWithRows([static::CSV_ROW_NUMBER => [static::COLUMN_ABSTRACT_SKU => $productAbstractTransfer->getSkuOrFail()]]);
+
+        // Assert
+        $this->assertTrue($importStepResponseTransfer->getIsSuccessful());
+        $this->assertSame([$merchantTransfer->getIdMerchantOrFail()], $this->findMerchantIds($productAbstractTransfer->getIdProductAbstractOrFail()));
+    }
+
+    public function testExecuteBatchAppliesLastRowWhenSameProductAbstractAppearsTwiceInBatch(): void
+    {
+        // Arrange
+        $productAbstractTransfer = $this->tester->haveProductAbstract();
+        $merchantTransfer = $this->tester->haveMerchant();
+        $this->haveMerchantProductAbstract($this->tester->haveMerchant()->getIdMerchantOrFail(), $productAbstractTransfer->getIdProductAbstractOrFail());
+
+        // Act
+        $importStepResponseTransfer = $this->executeStepWithRows([
+            static::CSV_ROW_NUMBER => [static::COLUMN_ABSTRACT_SKU => $productAbstractTransfer->getSkuOrFail(), static::COLUMN_MERCHANT => ''],
+            static::CSV_ROW_NUMBER + 1 => [static::COLUMN_ABSTRACT_SKU => $productAbstractTransfer->getSkuOrFail(), static::COLUMN_MERCHANT => $merchantTransfer->getMerchantReferenceOrFail()],
+        ]);
+
+        // Assert
+        $this->assertTrue($importStepResponseTransfer->getIsSuccessful());
+        $this->assertSame([$merchantTransfer->getIdMerchantOrFail()], $this->findMerchantIds($productAbstractTransfer->getIdProductAbstractOrFail()));
+    }
+
+    public function testExecuteBatchKeepsMerchantAssignmentWhenConcreteRowOfSimpleProductHasEmptyMerchant(): void
+    {
+        // Arrange
+        $productConcreteTransfer = $this->tester->haveProduct();
+        $merchantTransfer = $this->tester->haveMerchant();
+        $this->haveMerchantProductAbstract($merchantTransfer->getIdMerchantOrFail(), $productConcreteTransfer->getFkProductAbstractOrFail());
+
+        // Act
+        $importStepResponseTransfer = $this->executeStepWithRows([
+            static::CSV_ROW_NUMBER => [
+                static::COLUMN_ABSTRACT_SKU => $productConcreteTransfer->getAbstractSkuOrFail(),
+                static::COLUMN_CONCRETE_SKU => $productConcreteTransfer->getSkuOrFail(),
+                static::COLUMN_MERCHANT => '',
+            ],
+        ]);
+
+        // Assert
+        $this->assertTrue($importStepResponseTransfer->getIsSuccessful());
+        $this->assertSame([$merchantTransfer->getIdMerchantOrFail()], $this->findMerchantIds($productConcreteTransfer->getFkProductAbstractOrFail()));
+    }
+
     protected function createStep(): ProductCsvImportMerchantStep
     {
         /** @var \SprykerFeature\Zed\ProductExperienceManagement\Business\ProductExperienceManagementBusinessFactory $factory */
@@ -116,15 +200,23 @@ class ProductCsvImportMerchantStepTest extends Unit
 
     protected function executeStep(string $abstractSku, string $merchantReference): ImportStepResponseTransfer
     {
-        $importStep = $this->createStep();
-        $importStep->resetCache();
-
-        return $importStep->executeBatch([
+        return $this->executeStepWithRows([
             static::CSV_ROW_NUMBER => [
                 static::COLUMN_ABSTRACT_SKU => $abstractSku,
                 static::COLUMN_MERCHANT => $merchantReference,
             ],
         ]);
+    }
+
+    /**
+     * @param array<int, array<string, string>> $rows
+     */
+    protected function executeStepWithRows(array $rows): ImportStepResponseTransfer
+    {
+        $importStep = $this->createStep();
+        $importStep->resetCache();
+
+        return $importStep->executeBatch($rows);
     }
 
     protected function haveMerchantProductAbstract(int $idMerchant, int $idProductAbstract): void

@@ -16,12 +16,14 @@ use Generated\Shared\Transfer\ImportStepResponseTransfer;
 use Orm\Zed\Merchant\Persistence\SpyMerchantQuery;
 use Orm\Zed\MerchantProduct\Persistence\SpyMerchantProductAbstractQuery;
 use Orm\Zed\Product\Persistence\SpyProductAbstractQuery;
+use Spryker\Zed\Kernel\Persistence\EntityManager\TransactionTrait;
 use Spryker\Zed\Product\Dependency\ProductEvents;
 use Spryker\Zed\Propel\Persistence\BatchProcessor\ActiveRecordBatchProcessorTrait;
 
 class ProductCsvImportMerchantStep extends AbstractProductCsvImportStep
 {
     use ActiveRecordBatchProcessorTrait;
+    use TransactionTrait;
 
     protected const string COLUMN_MERCHANT = 'merchant';
 
@@ -54,10 +56,10 @@ class ProductCsvImportMerchantStep extends AbstractProductCsvImportStep
     {
         $response = (new ImportStepResponseTransfer())->setIsSuccessful(true);
 
-        $processedProductAbstractIds = [];
+        $rowsByAbstractSku = [];
 
         foreach ($rows as $rowNumber => $row) {
-            if ($this->isConcreteRow($row)) {
+            if ($this->isConcreteRow($row) || !$this->hasMerchantColumn($row)) {
                 continue;
             }
 
@@ -73,10 +75,12 @@ class ProductCsvImportMerchantStep extends AbstractProductCsvImportStep
                 continue;
             }
 
-            $processedProductAbstractIds[] = $this->assignMerchant($row);
+            $rowsByAbstractSku[$this->resolveAbstractSku($row)] = $row;
         }
 
-        $this->commit();
+        $processedProductAbstractIds = array_map($this->assignMerchant(...), array_values($rowsByAbstractSku));
+
+        $this->getTransactionHandler()->handleTransaction(fn (): bool => $this->commit());
         $this->addPublishEvents($processedProductAbstractIds, $response);
 
         return $response;
@@ -117,24 +121,16 @@ class ProductCsvImportMerchantStep extends AbstractProductCsvImportStep
      */
     protected function assignMerchant(array $row): ?int
     {
-        $merchantReference = $this->resolveMerchantReference($row);
-        $abstractSku = $this->resolveAbstractSku($row);
-
-        if ($merchantReference === '') {
-            return null;
-        }
-
-        if (!array_key_exists($abstractSku, static::$productAbstractIdCache)) {
-            static::$productAbstractIdCache[$abstractSku] = SpyProductAbstractQuery::create()
-                ->filterBySku($abstractSku)
-                ->findOne()
-                ?->getIdProductAbstract();
-        }
-
-        $idProductAbstract = static::$productAbstractIdCache[$abstractSku];
+        $idProductAbstract = $this->resolveProductAbstractId($this->resolveAbstractSku($row));
 
         if ($idProductAbstract === null) {
             return null;
+        }
+
+        $merchantReference = $this->resolveMerchantReference($row);
+
+        if ($merchantReference === '') {
+            return $this->unassignMerchant($idProductAbstract);
         }
 
         $merchantEntity = static::$merchantCache[$merchantReference] ?? null;
@@ -152,6 +148,33 @@ class ProductCsvImportMerchantStep extends AbstractProductCsvImportStep
         $this->persist($merchantProductEntity);
 
         return $idProductAbstract;
+    }
+
+    protected function unassignMerchant(int $idProductAbstract): ?int
+    {
+        $merchantProductEntity = SpyMerchantProductAbstractQuery::create()
+            ->filterByFkProductAbstract($idProductAbstract)
+            ->findOne();
+
+        if ($merchantProductEntity === null) {
+            return null;
+        }
+
+        $this->remove($merchantProductEntity);
+
+        return $idProductAbstract;
+    }
+
+    protected function resolveProductAbstractId(string $abstractSku): ?int
+    {
+        if (!array_key_exists($abstractSku, static::$productAbstractIdCache)) {
+            static::$productAbstractIdCache[$abstractSku] = SpyProductAbstractQuery::create()
+                ->filterBySku($abstractSku)
+                ->findOne()
+                ?->getIdProductAbstract();
+        }
+
+        return static::$productAbstractIdCache[$abstractSku];
     }
 
     /**
@@ -179,6 +202,14 @@ class ProductCsvImportMerchantStep extends AbstractProductCsvImportStep
 
         // 1 abstract + 1 concrete: same SKU for both
         return trim($row[static::COLUMN_CONCRETE_SKU] ?? '');
+    }
+
+    /**
+     * @param array<string, string> $row
+     */
+    protected function hasMerchantColumn(array $row): bool
+    {
+        return array_key_exists(static::COLUMN_MERCHANT, $row);
     }
 
     /**
