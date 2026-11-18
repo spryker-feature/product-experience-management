@@ -9,3 +9,4 @@ parameters:
         - '#(Class|Instantiated class) Orm\\Zed\\SelfServicePortal\\Persistence\\SpyProductClass( not found|.*).#'
         # The Yves locator method is auto-generated and not yet present in the IDE autocomplete interface.
         - '#Call to an undefined method .+LocatorLocatorInterface::productExperienceManagement\(\).#'
+        - '#PHPDoc tag @SuppressWarnings has invalid value#'

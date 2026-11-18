@@ -47,6 +47,8 @@ use SprykerFeature\Zed\ProductExperienceManagement\Business\ExportStep\ProductCs
 use SprykerFeature\Zed\ProductExperienceManagement\Business\ImportStep\ProductCsvImport\ProductCsvImportAbstractLocalizedAttributesStep;
 use SprykerFeature\Zed\ProductExperienceManagement\Business\ImportStep\ProductCsvImport\ProductCsvImportAbstractStep;
 use SprykerFeature\Zed\ProductExperienceManagement\Business\ImportStep\ProductCsvImport\ProductCsvImportAbstractStoreStep;
+use SprykerFeature\Zed\ProductExperienceManagement\Business\ImportStep\ProductCsvImport\ProductCsvImportAvailabilityUpdater;
+use SprykerFeature\Zed\ProductExperienceManagement\Business\ImportStep\ProductCsvImport\ProductCsvImportAvailabilityUpdaterInterface;
 use SprykerFeature\Zed\ProductExperienceManagement\Business\ImportStep\ProductCsvImport\ProductCsvImportCategoryStep;
 use SprykerFeature\Zed\ProductExperienceManagement\Business\ImportStep\ProductCsvImport\ProductCsvImportClassStep;
 use SprykerFeature\Zed\ProductExperienceManagement\Business\ImportStep\ProductCsvImport\ProductCsvImportConcreteLocalizedAttributesStep;
@@ -220,7 +222,12 @@ class ProductExperienceManagementBusinessFactory extends AbstractBusinessFactory
 
     public function createProductCsvImportStockStep(): ImportStepInterface
     {
-        return new ProductCsvImportStockStep($this->getStoreFacade(), $this->getStockFacade());
+        return new ProductCsvImportStockStep($this->createProductCsvImportAvailabilityUpdater());
+    }
+
+    public function createProductCsvImportAvailabilityUpdater(): ProductCsvImportAvailabilityUpdaterInterface
+    {
+        return new ProductCsvImportAvailabilityUpdater($this->getStoreFacade(), $this->getStockFacade());
     }
 
     public function createProductCsvImportSearchStep(): ImportStepInterface

@@ -86,11 +86,7 @@ class ProductCsvImportShipmentTypeStep extends AbstractProductCsvImportStep
             $validationResult = $this->validateRow($row, $rowNumber, $propertyNamesInFile);
 
             if ($validationResult->getErrors()->count() > 0) {
-                $response->setIsSuccessful(false);
-
-                foreach ($validationResult->getErrors() as $error) {
-                    $response->addError($error);
-                }
+                $this->addValidationErrorsToResponse($response, $validationResult);
 
                 continue;
             }
@@ -101,26 +97,7 @@ class ProductCsvImportShipmentTypeStep extends AbstractProductCsvImportStep
                 continue;
             }
 
-            $shipmentTypeKeys = $this->parseShipmentTypeKeys($shipmentTypesValue);
-
-            foreach ($shipmentTypeKeys as $shipmentTypeKey) {
-                $shipmentTypeEntity = static::$shipmentTypeCache[$shipmentTypeKey] ?? null;
-
-                if ($shipmentTypeEntity === null) {
-                    continue;
-                }
-
-                $idShipmentType = $shipmentTypeEntity->getIdShipmentType();
-
-                $entity = SpyProductShipmentTypeQuery::create()
-                    ->filterByFkProduct($idProduct)
-                    ->filterByFkShipmentType($idShipmentType)
-                    ->findOneOrCreate();
-
-                if ($entity->isNew()) {
-                    $this->persist($entity);
-                }
-            }
+            $this->persistProductShipmentTypes($idProduct, $this->parseShipmentTypeKeys($shipmentTypesValue));
 
             $processedProductAbstractIds[] = $this->resolveProductAbstractId($row);
         }
@@ -129,6 +106,40 @@ class ProductCsvImportShipmentTypeStep extends AbstractProductCsvImportStep
         $this->addPublishEvents($processedProductAbstractIds, $response);
 
         return $response;
+    }
+
+    protected function addValidationErrorsToResponse(
+        ImportStepResponseTransfer $response,
+        ImportRowValidationCollectionTransfer $validationResult
+    ): void {
+        $response->setIsSuccessful(false);
+
+        foreach ($validationResult->getErrors() as $error) {
+            $response->addError($error);
+        }
+    }
+
+    /**
+     * @param array<string> $shipmentTypeKeys
+     */
+    protected function persistProductShipmentTypes(int $idProduct, array $shipmentTypeKeys): void
+    {
+        foreach ($shipmentTypeKeys as $shipmentTypeKey) {
+            $shipmentTypeEntity = static::$shipmentTypeCache[$shipmentTypeKey] ?? null;
+
+            if ($shipmentTypeEntity === null) {
+                continue;
+            }
+
+            $entity = SpyProductShipmentTypeQuery::create()
+                ->filterByFkProduct($idProduct)
+                ->filterByFkShipmentType($shipmentTypeEntity->getIdShipmentType())
+                ->findOneOrCreate();
+
+            if ($entity->isNew()) {
+                $this->persist($entity);
+            }
+        }
     }
 
     /**

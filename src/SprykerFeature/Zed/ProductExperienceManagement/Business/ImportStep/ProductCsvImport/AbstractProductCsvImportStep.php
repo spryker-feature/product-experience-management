@@ -18,6 +18,8 @@ use Spryker\Zed\DataExchangeExtension\Dependency\Plugin\ImportStepInterface;
  * Base class of the product import steps. Implements the engine's step contract, provides the helpers for the two
  * transfers every step reports (a row error and a publish event). Opts every product step into the engine's per-batch
  * cache reset with a no-op `resetCache()`; a step with static lookup caches overrides it.
+ *
+ * @SuppressWarnings(PHPMD.NumberOfChildren)
  */
 abstract class AbstractProductCsvImportStep implements ImportStepInterface, CacheResettableImportStepInterface
 {

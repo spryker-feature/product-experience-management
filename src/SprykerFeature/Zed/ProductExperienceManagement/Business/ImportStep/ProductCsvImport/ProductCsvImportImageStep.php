@@ -28,6 +28,8 @@ use Spryker\Zed\Propel\Persistence\BatchProcessor\ActiveRecordBatchProcessorTrai
  * Processes image columns: "Images {size} ({locale}-{sort_order})" → system "images.{size}.{locale}.{sort_order}".
  * Each column contains a single image URL.
  * Handles both abstract and concrete product images.
+ *
+ * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
  */
 class ProductCsvImportImageStep extends AbstractProductCsvImportStep
 {
@@ -305,12 +307,10 @@ class ProductCsvImportImageStep extends AbstractProductCsvImportStep
                 ];
             }
 
-            if ($size === static::IMAGE_SIZE_SMALL) {
-                $rawEntries[$localeKey][$groupKey]['urlSmall'] = $value;
-            }
+            $urlKey = $this->resolveImageUrlKey($size);
 
-            if ($size === static::IMAGE_SIZE_LARGE) {
-                $rawEntries[$localeKey][$groupKey]['urlLarge'] = $value;
+            if ($urlKey !== null) {
+                $rawEntries[$localeKey][$groupKey][$urlKey] = $value;
             }
         }
 
@@ -329,6 +329,18 @@ class ProductCsvImportImageStep extends AbstractProductCsvImportStep
         }
 
         return $imageGroups;
+    }
+
+    /**
+     * @return 'urlSmall'|'urlLarge'|null
+     */
+    protected function resolveImageUrlKey(string $size): ?string
+    {
+        return match ($size) {
+            static::IMAGE_SIZE_SMALL => 'urlSmall',
+            static::IMAGE_SIZE_LARGE => 'urlLarge',
+            default => null,
+        };
     }
 
     protected function resolveProductAbstractId(string $abstractSku): ?int

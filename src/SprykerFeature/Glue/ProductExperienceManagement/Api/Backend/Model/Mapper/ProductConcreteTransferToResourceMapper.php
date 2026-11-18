@@ -11,7 +11,6 @@ namespace SprykerFeature\Glue\ProductExperienceManagement\Api\Backend\Model\Mapp
 
 use DateTimeImmutable;
 use Generated\Api\Backend\ProductsBackendResource;
-use Generated\Shared\Transfer\PriceProductTransfer;
 use Generated\Shared\Transfer\ProductAbstractCollectionTransfer;
 use Generated\Shared\Transfer\ProductAbstractTransfer;
 use Generated\Shared\Transfer\ProductCategoryTransfer;
@@ -27,16 +26,6 @@ class ProductConcreteTransferToResourceMapper implements ProductConcreteTransfer
 
     protected const string KEY_NAME = 'name';
 
-    protected const string KEY_PRICE_TYPE_NAME = 'priceTypeName';
-
-    protected const string KEY_CURRENCY_CODE = 'currencyCode';
-
-    protected const string KEY_STORE_NAME = 'storeName';
-
-    protected const string KEY_GROSS_AMOUNT = 'grossAmount';
-
-    protected const string KEY_NET_AMOUNT = 'netAmount';
-
     protected const string KEY_LOCALE_NAME = 'localeName';
 
     protected const string KEY_IMAGES = 'images';
@@ -49,31 +38,19 @@ class ProductConcreteTransferToResourceMapper implements ProductConcreteTransfer
 
     protected const string KEY_STOCK_NAME = 'stockName';
 
-    protected const string KEY_QUANTITY = 'quantity';
+    public const string KEY_QUANTITY = 'quantity';
 
     protected const string KEY_IS_NEVER_OUT_OF_STOCK = 'isNeverOutOfStock';
 
     protected const string KEY_SKU = 'sku';
 
-    protected const string KEY_UUID = 'uuid';
+    public const string KEY_UUID = 'uuid';
 
     protected const string KEY_KEY = 'key';
 
     protected const string KEY_ALT_TEXT_SMALL = 'altTextSmall';
 
     protected const string KEY_ALT_TEXT_LARGE = 'altTextLarge';
-
-    protected const string KEY_VOLUME_PRICES = 'volumePrices';
-
-    protected const string KEY_VOLUME_PRICES_STORAGE = 'volume_prices';
-
-    protected const string KEY_VOLUME_NET_PRICE = 'net_price';
-
-    protected const string KEY_VOLUME_GROSS_PRICE = 'gross_price';
-
-    protected const string KEY_NET_PRICE = 'netPrice';
-
-    protected const string KEY_GROSS_PRICE = 'grossPrice';
 
     protected const string KEY_ABSTRACT_SKU = 'abstractSku';
 
@@ -119,6 +96,7 @@ class ProductConcreteTransferToResourceMapper implements ProductConcreteTransfer
 
     public function __construct(
         protected readonly SerializerServiceInterface $serializerService,
+        protected readonly ProductConcretePriceResourceMapperInterface $productConcretePriceResourceMapper,
     ) {
     }
 
@@ -234,7 +212,7 @@ class ProductConcreteTransferToResourceMapper implements ProductConcreteTransfer
             static::KEY_ATTRIBUTES => $productConcreteTransfer->getAttributes() ?: [],
             static::KEY_SUPER_ATTRIBUTE_VALUES => $productConcreteTransfer->getSuperAttributeValues() ?: [],
             static::KEY_LOCALIZED_ATTRIBUTES => $this->extractLocalizedAttributes($productConcreteTransfer),
-            static::KEY_PRICES => $this->extractPrices($productConcreteTransfer),
+            static::KEY_PRICES => $this->productConcretePriceResourceMapper->mapPrices($productConcreteTransfer),
             static::KEY_IMAGE_SETS => $this->extractImageSets($productConcreteTransfer),
             static::KEY_STOCKS => $this->extractStocks($productConcreteTransfer),
             static::KEY_PRODUCT_BUNDLE => $this->extractProductBundle($productConcreteTransfer),
@@ -350,75 +328,6 @@ class ProductConcreteTransferToResourceMapper implements ProductConcreteTransfer
         }
 
         return $localizedAttributesCollection;
-    }
-
-    /**
-     * @return array<int, array<string, mixed>>
-     */
-    protected function extractPrices(ProductConcreteTransfer $productConcreteTransfer): array
-    {
-        $priceCollection = [];
-
-        foreach ($productConcreteTransfer->getPrices() as $priceProductTransfer) {
-            $uuid = $priceProductTransfer->getMoneyValue()?->getUuid();
-
-            if ($uuid !== null && isset($priceCollection[$uuid])) {
-                continue;
-            }
-
-            $flattenedPrice = $this->flattenPrice($priceProductTransfer);
-            $key = $uuid ?? count($priceCollection);
-            $priceCollection[$key] = $flattenedPrice;
-        }
-
-        return array_values($priceCollection);
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    protected function flattenPrice(PriceProductTransfer $priceProductTransfer): array
-    {
-        $moneyValueTransfer = $priceProductTransfer->getMoneyValue();
-
-        return [
-            static::KEY_UUID => $moneyValueTransfer?->getUuid(),
-            static::KEY_PRICE_TYPE_NAME => $priceProductTransfer->getPriceTypeName(),
-            static::KEY_CURRENCY_CODE => $moneyValueTransfer?->getCurrency()?->getCode(),
-            static::KEY_STORE_NAME => $moneyValueTransfer?->getStore()?->getName(),
-            static::KEY_GROSS_AMOUNT => $moneyValueTransfer?->getGrossAmount(),
-            static::KEY_NET_AMOUNT => $moneyValueTransfer?->getNetAmount(),
-            static::KEY_VOLUME_PRICES => $this->decodeVolumePrices($moneyValueTransfer?->getPriceData()),
-        ];
-    }
-
-    /**
-     * @return array<int, array<string, mixed>>
-     */
-    protected function decodeVolumePrices(?string $priceData): array
-    {
-        if ($priceData === null || $priceData === '') {
-            return [];
-        }
-
-        $decoded = json_decode($priceData, true);
-
-        if (!is_array($decoded)) {
-            return [];
-        }
-
-        $storageVolumePrices = $decoded[static::KEY_VOLUME_PRICES_STORAGE] ?? [];
-        $volumePrices = [];
-
-        foreach ($storageVolumePrices as $storageVolumePrice) {
-            $volumePrices[] = [
-                static::KEY_QUANTITY => $storageVolumePrice[static::KEY_QUANTITY] ?? null,
-                static::KEY_NET_PRICE => $storageVolumePrice[static::KEY_VOLUME_NET_PRICE] ?? null,
-                static::KEY_GROSS_PRICE => $storageVolumePrice[static::KEY_VOLUME_GROSS_PRICE] ?? null,
-            ];
-        }
-
-        return $volumePrices;
     }
 
     /**
